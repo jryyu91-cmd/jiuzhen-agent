@@ -8,7 +8,6 @@ interface GeneratorFormProps {
   error: string | null
 }
 
-// 区块③-左：卷宗式四组表单卡（衬线序号 01-04）
 export default function GeneratorForm({ value, onChange, onGenerate, loading, error }: GeneratorFormProps) {
   const set = (key: keyof DistilleryInfo) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -22,11 +21,10 @@ export default function GeneratorForm({ value, onChange, onGenerate, loading, er
 
   return (
     <form className="card form-card" onSubmit={(e) => { e.preventDefault(); onGenerate() }}>
-      {/* 01 这瓶酒 */}
       <div className="form-group">
-        <span className="serial">01<small>THE JIU</small></span>
-        <h3>这瓶酒</h3>
-        <p className="g-sub">把产品的底子交代清楚</p>
+        <span className="serial">01<small>PRODUCT</small></span>
+        <h3>先说清这瓶酒</h3>
+        <p className="g-sub">只填你确定知道的产品底层信息，不确定的不要猜</p>
         <div className="fields">
           <div className="form-grid2">
             <div className="field">
@@ -39,8 +37,8 @@ export default function GeneratorForm({ value, onChange, onGenerate, loading, er
             </div>
           </div>
           <div className="field">
-            <label>卖点（顿号分隔）</label>
-            <input value={value.selling_points.join('、')} onChange={setSellingPoints} />
+            <label>已知卖点（顿号分隔）</label>
+            <input value={value.selling_points.join('、')} onChange={setSellingPoints} placeholder="如：香型、度数、规格、已确认工艺" />
           </div>
           <div className="form-grid2">
             <div className="field">
@@ -55,68 +53,77 @@ export default function GeneratorForm({ value, onChange, onGenerate, loading, er
         </div>
       </div>
 
-      {/* 02 卖给谁 */}
       <div className="form-group">
-        <span className="serial">02<small>FOR WHOM</small></span>
-        <h3>卖给谁</h3>
-        <p className="g-sub">想清楚坐到生活桌上的那群人</p>
+        <span className="serial">02<small>MARKETING</small></span>
+        <h3>营销线索</h3>
+        <p className="g-sub">知道就填，不知道可以留空，由 Agent 先判断</p>
         <div className="fields">
           <div className="field">
-            <label>目标人群</label>
-            <input value={value.target_audience} onChange={set('target_audience')} />
+            <label>你认为的目标人群（选填）</label>
+            <input
+              value={value.target_audience}
+              onChange={set('target_audience')}
+              placeholder="不知道可以不填，Agent 会按价格带与产品信息反推"
+            />
           </div>
           <div className="field">
-            <label>典型消费场景（选填）</label>
+            <label>已有真实消费场景（选填）</label>
             <input
               value={value.consume_scene ?? ''}
               onChange={set('consume_scene')}
-              placeholder="如：周末炖菜、烧烤摊朋友小聚、下班到家小酌"
+              placeholder="如：家庭聚餐、朋友小聚、夜宵；没有就留空"
+            />
+          </div>
+          <div className="field">
+            <label>当前营销目标</label>
+            <input
+              value={value.marketing_goal ?? '消费者动销'}
+              onChange={set('marketing_goal')}
+              placeholder="消费者动销 / 品牌认知 / 新品种草 / 私域转化"
             />
           </div>
         </div>
       </div>
 
-      {/* 03 怎么说话 */}
       <div className="form-group">
-        <span className="serial">03<small>THE TONE</small></span>
-        <h3>怎么说话</h3>
-        <p className="g-sub">语气是品牌的声音，红线是品牌的底线</p>
+        <span className="serial">03<small>VOICE</small></span>
+        <h3>品牌怎么说话</h3>
+        <p className="g-sub">控制风格，不让不同酒厂最后都写成同一种声音</p>
         <div className="fields">
           <div className="field">
             <label>品牌语气</label>
             <input value={value.brand_tone} onChange={set('brand_tone')} />
           </div>
           <div className="field">
-            <label>语气红线（顿号分隔，选填）</label>
+            <label>品牌语气红线（选填）</label>
             <input
               value={(value.tone_taboos ?? []).join('、')}
               onChange={setToneTaboos}
-              placeholder="如：不摆大师腔、不吹年份"
+              placeholder="如：不摆大师腔、不用绝对化词汇"
             />
           </div>
         </div>
       </div>
 
-      {/* 04 素材库 */}
       <div className="form-group">
-        <span className="serial">04<small>MATERIALS</small></span>
-        <h3>素材库</h3>
-        <p className="g-sub">只有你家才有的真细节</p>
+        <span className="serial">04<small>EVIDENCE</small></span>
+        <h3>真实素材与证据</h3>
+        <p className="g-sub">只有这家酒厂才有的真细节，优先于漂亮形容词</p>
         <div className="fields">
           <div className="field">
-            <label>酒厂故事 / 产区素材（选填）</label>
+            <label>酒厂故事 / 人物 / 车间 / 消费者素材（选填）</label>
             <textarea
-              rows={3}
+              rows={4}
               value={value.extra_material ?? ''}
               onChange={set('extra_material')}
-              placeholder="如：酒师傅凌晨四点看酒醅，说这时候的酸香最骗不了人……"
+              placeholder="只写真实发生、可以确认的细节。正式版还会把工艺、资质、溯源等资料做成事实证据库。"
             />
           </div>
         </div>
       </div>
 
       <button type="submit" className="btn btn-block gen-btn" disabled={loading}>
-        <span className="spark">✦</span> {loading ? '正在装配档案并写作…' : '生成内容三件套'}
+        <span className="spark">✦</span> {loading ? '正在诊断并生成…' : '先诊断，再生成营销内容'}
       </button>
       {error && <p className="error">{error}</p>}
     </form>
