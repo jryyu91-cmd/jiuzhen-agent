@@ -12,7 +12,6 @@ interface WorkbenchProps {
   error: string | null
 }
 
-// 区块③ 内容工作台：左表单卡 + 右结果卡
 const Workbench = forwardRef<HTMLDivElement, WorkbenchProps>(function Workbench(
   { form, onFormChange, result, onGenerate, loading, error },
   ref,
@@ -26,7 +25,7 @@ const Workbench = forwardRef<HTMLDivElement, WorkbenchProps>(function Workbench(
         loading={loading}
         error={error}
       />
-      <ResultPanel result={result} />
+      <ResultPanel result={result} loading={loading} />
     </div>
   )
 })
