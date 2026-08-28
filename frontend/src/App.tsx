@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { generate, fetchCommentReplies } from './api'
-import type { DistilleryInfo, GenerateResponse, CommentResponse } from './api'
+import { useEffect, useState } from 'react'
+import { generate, generateByProfile, fetchCommentReplies, listProfiles } from './api'
+import type { DistilleryInfo, GenerateResponse, CommentResponse, ProfileSummary } from './api'
 
 const CHANNEL_LABEL: Record<string, string> = {
   wechat: '📝 公众号文案',
@@ -21,11 +21,38 @@ const DEFAULT_FORM: DistilleryInfo = {
 
 export default function App() {
   const [form, setForm] = useState<DistilleryInfo>(DEFAULT_FORM)
+  const [profiles, setProfiles] = useState<ProfileSummary[]>([])
   const [result, setResult] = useState<GenerateResponse | null>(null)
   const [comments, setComments] = useState<CommentResponse | null>(null)
   const [activeTab, setActiveTab] = useState<string>('wechat')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    listProfiles().then(setProfiles).catch(() => setProfiles([]))
+  }, [])
+
+  const handleProfileGenerate = async (profileId: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await generateByProfile(profileId)
+      setResult(res)
+      const item = res.contents.find((c) => c.channel === 'wechat')
+      const c = await fetchCommentReplies({
+        product: form.product_name,
+        name: form.name,
+        location: form.location,
+        price: form.price_range,
+      })
+      setComments(c)
+      setActiveTab(res.contents[0]?.channel ?? 'wechat')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '未知错误')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const set = (key: keyof DistilleryInfo) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -60,6 +87,18 @@ export default function App() {
         <h1>🍶 酒阵 Agent</h1>
         <p>酱酒厂市场部一个人的内容工厂 —— 输入酒厂信息，产出公众号 / 朋友圈 / 短视频三件套</p>
       </header>
+
+      {profiles.length > 0 && (
+        <section className="profile-bar">
+          <span className="profile-label">一厂一档 · 快速生成：</span>
+          {profiles.map((p) => (
+            <button key={p.profile_id} className="profile-btn" disabled={loading}
+              onClick={() => handleProfileGenerate(p.profile_id)}>
+              {p.distillery_name}（{p.product_name} · {p.price_range}）
+            </button>
+          ))}
+        </section>
+      )}
 
       <div className="columns">
         <section className="panel">

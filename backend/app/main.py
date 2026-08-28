@@ -5,8 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from .models import DistilleryInfo, GenerateResponse, CommentResponse
 from .pipeline import run_pipeline
 from .comments import gen_comment_replies
+from .profiles import get_profile, list_profiles, profile_to_info
 
-app = FastAPI(title="酒阵 Agent", version="0.1.0")
+app = FastAPI(title="酒阵 Agent", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,9 +22,32 @@ def health() -> dict:
     return {"status": "ok", "service": "jiuzhen-agent"}
 
 
+@app.get("/api/profiles")
+def profiles() -> list[dict]:
+    """一厂一档：已有品牌档案列表"""
+    return list_profiles()
+
+
 @app.post("/api/generate", response_model=GenerateResponse)
 def generate(info: DistilleryInfo) -> GenerateResponse:
     contents, trace = run_pipeline(info)
+    return GenerateResponse(
+        distillery=info.name,
+        contents=contents,
+        pipeline_trace=trace,
+    )
+
+
+@app.post("/api/generate/by-profile/{profile_id}", response_model=GenerateResponse)
+def generate_by_profile(profile_id: str) -> GenerateResponse:
+    """按品牌档案生成：一厂一档的个性化定制入口"""
+    profile = get_profile(profile_id)
+    if profile is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail=f"档案不存在: {profile_id}")
+    info = profile_to_info(profile)
+    contents, trace = run_pipeline(info)
+    trace.insert(0, f"⓪ 装配品牌档案「{profile.profile_id}」：语气={profile.brand_tone}｜红线={('、'.join(profile.tone_taboos) or '无')}｜素材库={len(profile.scene_materials)}条")
     return GenerateResponse(
         distillery=info.name,
         contents=contents,

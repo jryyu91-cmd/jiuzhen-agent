@@ -34,6 +34,25 @@ export interface CommentResponse {
 
 const API = '/api'
 
+export interface ProfileSummary {
+  profile_id: string
+  distillery_name: string
+  product_name: string
+  price_range: string
+}
+
+export async function listProfiles(): Promise<ProfileSummary[]> {
+  const res = await fetch(`${API}/profiles`)
+  if (!res.ok) throw new Error(`获取档案失败：${res.status}`)
+  return res.json()
+}
+
+export async function generateByProfile(profileId: string): Promise<GenerateResponse> {
+  const res = await fetch(`${API}/generate/by-profile/${profileId}`, { method: 'POST' })
+  if (!res.ok) throw new Error(`按档案生成失败：${res.status}`)
+  return res.json()
+}
+
 export async function generate(info: DistilleryInfo): Promise<GenerateResponse> {
   const res = await fetch(`${API}/generate`, {
     method: 'POST',
