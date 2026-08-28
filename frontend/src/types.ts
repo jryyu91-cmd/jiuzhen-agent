@@ -1,4 +1,4 @@
-// 酒阵 Agent · 前端类型定义
+// 酿见 AI · 前端类型定义
 
 export interface FactEvidence {
   label: string
