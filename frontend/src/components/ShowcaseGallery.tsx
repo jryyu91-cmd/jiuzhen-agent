@@ -17,7 +17,7 @@ export default function ShowcaseGallery({ profiles, onUseProfile, loading }: Sho
           <div>
             <span className="section-kicker">QUICK START</span>
             <h2>不想填表？先拿演示档案跑一次</h2>
-            <p>两家虚构酒厂、两种产品逻辑。点击后直接进入完整营销诊断流程。</p>
+            <p>两家虚构酒厂、两种产品逻辑。点击后直接看看酿见如何从产品信息走到营销判断。</p>
           </div>
           <span className="demo-note">演示数据 · 非真实酒厂</span>
         </div>
