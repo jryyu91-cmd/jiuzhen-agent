@@ -149,6 +149,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
               </nav>
               <button className="copy-btn" onClick={copyActive}>{copied ? '已复制 ✓' : '复制内容'}</button>
             </div>
+            <p style={{ margin: '0 0 18px', fontSize: 12, color: '#7a8087' }}>消费者内容草稿 · 策略判断留在“策略诊断”，不混进成品。</p>
             {active && (
               <article className="article">
                 <div className="article-meta"><span>已按诊断结果生成</span><span>·</span><span>{CHANNEL_LABEL[active.channel]}</span></div>
