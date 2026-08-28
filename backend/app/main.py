@@ -1,6 +1,10 @@
 """酿见 AI · FastAPI 入口"""
+import os
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .models import DistilleryInfo, GenerateResponse, CommentResponse, BrandProfile
 from .pipeline import run_pipeline
@@ -31,7 +35,6 @@ def profiles() -> list[BrandProfile]:
 
 def _generate(info: DistilleryInfo) -> GenerateResponse:
     diagnosis = diagnose_marketing(info)
-    # 用户没有明确场景时，用最高优先级诊断结果自动补场景，再进入内容执行层。
     if not info.consume_scene and diagnosis.scene_opportunities:
         info = info.model_copy(update={"consume_scene": diagnosis.scene_opportunities[0].scene})
     contents, trace = run_pipeline(info)
@@ -73,3 +76,10 @@ def comment_reply(payload: dict) -> CommentResponse:
         price=payload.get("price", ""),
         comments=payload.get("comments"),
     )
+
+
+# 在线演示采用单容器部署时，把构建后的 React 页面交给 FastAPI 同域提供。
+# 本地开发没有 STATIC_DIR，不影响原有 Vite + FastAPI 双服务模式。
+STATIC_DIR = os.getenv("STATIC_DIR", "").strip()
+if STATIC_DIR and Path(STATIC_DIR).is_dir():
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="frontend")
