@@ -1,4 +1,4 @@
-"""酒阵 Agent · FastAPI 入口"""
+"""酿见 AI · FastAPI 入口"""
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,7 +9,7 @@ from .compliance import review_content
 from .comments import gen_comment_replies
 from .profiles import get_profile, list_profiles, profile_to_info
 
-app = FastAPI(title="酒阵 Agent", version="0.3.0")
+app = FastAPI(title="酿见 AI", version="0.3.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,7 +21,7 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "service": "jiuzhen-agent", "version": "0.3.0"}
+    return {"status": "ok", "service": "niangjian-ai", "version": "0.3.0"}
 
 
 @app.get("/api/profiles", response_model=list[BrandProfile])
