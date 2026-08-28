@@ -11,11 +11,14 @@ const DEFAULT_FORM: DistilleryInfo = {
   location: '贵州遵义·茅台镇',
   product_name: '老烧坊·窖藏10',
   price_range: '388元',
-  target_audience: '30-45岁男性、商务送礼与自饮兼顾',
+  target_audience: '',
   selling_points: ['大曲坤沙', '老酒勾调', '赤水河谷产区'],
   consume_scene: '',
-  brand_tone: '朴实、产区自豪感、有匠心但不装',
+  marketing_goal: '消费者动销',
+  existing_channels: ['朋友圈', '短视频', '公众号'],
+  brand_tone: '朴实、可信、有生活感',
   tone_taboos: [],
+  fact_evidence: [],
   extra_material: '',
 }
 
@@ -60,7 +63,6 @@ export default function App() {
     }
   }
 
-  // 案例馆「用此档案生成」：生成 → 档案回填表单（装配可视化）→ 滚到结果
   const handleUseProfile = async (p: ProfileFull) => {
     setLoading(true)
     setError(null)
@@ -74,8 +76,11 @@ export default function App() {
         target_audience: p.target_audience,
         selling_points: [...p.selling_points],
         consume_scene: p.lifestyle_scene,
+        marketing_goal: '消费者动销',
+        existing_channels: ['朋友圈', '短视频', '公众号'],
         brand_tone: p.brand_tone,
         tone_taboos: [...p.tone_taboos],
+        fact_evidence: [...p.fact_evidence],
         extra_material: p.scene_materials.join('；'),
       }
       setForm(filled)
@@ -98,8 +103,8 @@ export default function App() {
         <section className="section" id="workbench">
           <div className="wrap">
             <div className="workbench-head">
-              <h2>内容工作台</h2>
-              <p className="sub">填四张卡，交给 Agent；语气跟着档案走，红线自动避开。</p>
+              <h2>营销工作台</h2>
+              <p className="sub">先交代产品底子；不知道卖给谁、在哪个场景卖，也可以交给 Agent 先诊断。</p>
             </div>
             <Workbench
               ref={workbenchRef}
@@ -119,9 +124,9 @@ export default function App() {
         <div className="wrap">
           <span className="brand">酒阵 Agent</span>
           <span className="dot">·</span>
-          <span>贵客松 2026 赛道二（AI×白酒）</span>
+          <span>AI×白酒场景化营销</span>
           <span className="dot">·</span>
-          <span>48h 演示版：模板+规则引擎驱动，离线可跑，LLM 接入开关已预留</span>
+          <span>诊断 → 人群场景 → 内容 → 事实核验 → 合规检查</span>
         </div>
       </footer>
     </div>
