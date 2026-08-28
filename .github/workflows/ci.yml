@@ -35,13 +35,13 @@ jobs:
 
           materials = [SourceMaterial(
               name='产品手册-demo.txt',
-              text='酒厂：青溪酒厂\n产品名称：青溪·小坛\n建议零售价：168元\n产区：贵州遵义·习水县\n瓶身标注酒精度：42%vol\n产品资料：小坛储存，小规格包装。',
+              text='酒厂：青溪酒厂\n产品名称：青溪·小坛\n建议零售价：168元\n产区：贵州遵义·习水县\n瓶身标注酒精度：53%vol\n产品资料：小坛储存，小规格包装。',
               source_kind='demo',
           )]
           analysis, draft = analyze_materials(materials)
           assert draft.product_name == '青溪·小坛'
           assert draft.price_range == '168元'
-          assert any(f.value == '42%vol' and f.source == '产品手册-demo.txt' for f in analysis.extracted_facts)
+          assert any(f.value == '53%vol' and f.source == '产品手册-demo.txt' for f in analysis.extracted_facts)
           info = DistilleryInfo(source_materials=materials, marketing_goal='消费者动销')
           info = merge_material_draft(info, analysis, draft)
           diagnosis = diagnose_marketing(info)
