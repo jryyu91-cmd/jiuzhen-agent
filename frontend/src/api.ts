@@ -1,6 +1,10 @@
 import type { DistilleryInfo, GenerateResponse, CommentResponse, ProfileFull } from './types'
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000'
+// 默认走同源 /api：
+// - 本地 Vite dev 由 vite.config.ts 代理到 8000
+// - Docker / 在线部署由同一域名直接访问 FastAPI
+// 如需拆分前后端部署，可用 VITE_API_BASE 覆盖。
+const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 async function json<T>(res: Response): Promise<T> {
   if (!res.ok) {
