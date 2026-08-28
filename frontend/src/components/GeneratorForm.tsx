@@ -174,14 +174,14 @@ export default function GeneratorForm({ value, onChange, onGenerate, loading, er
                 <input value={(value.tone_taboos ?? []).join('、')} onChange={setToneTaboos} placeholder="如：不摆大师腔、不用绝对化词汇" />
               </div>
               <div className="field">
-                <label>事实证据 <span>推荐填写</span></label>
+                <label>事实证据 <span>推荐填写，也可以先跳过</span></label>
                 <textarea
                   rows={4}
                   value={evidenceText}
                   onChange={setEvidence}
                   placeholder={'每行一条：标签｜事实｜来源\n例如：度数｜42%vol｜瓶身标签\n工艺｜大曲坤沙｜产品检测/企业资料'}
                 />
-                <small>后续内容涉及这些事实时，Agent 才有依据可用。</small>
+                <small>有证据，Agent 才能放心使用；没有时会提示补资料，不会自动编造。</small>
               </div>
               <div className="field">
                 <label>真实故事 / 人物 / 车间细节 <span>选填</span></label>
