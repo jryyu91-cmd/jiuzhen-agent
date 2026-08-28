@@ -8,79 +8,46 @@ interface ShowcaseCardProps {
   loading: boolean
 }
 
-// 区块② 单张卷宗档案卡：编号 + 衬线名 + 酒标竖排条 + 红章 + 可展开档案详情
 export default function ShowcaseCard({ profile, index, onUse, loading }: ShowcaseCardProps) {
   const [expanded, setExpanded] = useState(false)
-  const num = String(index + 1).padStart(3, '0')
 
   return (
-    <article className="card dossier">
-      <span className="seal" aria-hidden="true">档案</span>
-      <div className="dossier-top">
-        <span className="dossier-num">编号 JZ-2025-{num}</span>
-        <div className="dossier-info">
-          <h3>{profile.distillery_name}</h3>
-          <p className="positioning">
-            <strong>定位</strong>｜{profile.positioning || `${profile.product_name}，把产区的底气讲成人话`}
-          </p>
-        </div>
-        <span className="wine-spine">{spineLabel(profile)}</span>
+    <article className="profile-card">
+      <div className="profile-card-head">
+        <div className="profile-id"><span>{String(index + 1).padStart(2, '0')}</span> DEMO PROFILE</div>
+        <span className="profile-price">{profile.price_range}</span>
       </div>
-      <dl className="dossier-body">
-        <div className="dossier-field">
-          <dt>产品</dt>
-          <dd>{profile.product_name}<span className="sep">·</span>{profile.price_range}<span className="sep">·</span>{profile.location}</dd>
+      <div className="profile-title-row">
+        <div>
+          <h3>{profile.distillery_name}</h3>
+          <p>{profile.positioning || `${profile.product_name} 的场景化营销档案`}</p>
         </div>
-        <div className="dossier-field">
-          <dt>生活场景</dt>
-          <dd>{profile.lifestyle_scene || '—'}</dd>
-        </div>
-      </dl>
+        <span className="profile-avatar">{profile.distillery_name.slice(0, 1)}</span>
+      </div>
+
+      <div className="profile-facts">
+        <div><small>主推产品</small><strong>{profile.product_name}</strong></div>
+        <div><small>生活场景</small><strong>{profile.lifestyle_scene || '待 Agent 判断'}</strong></div>
+        <div><small>目标人群</small><strong>{profile.target_audience || '待 Agent 判断'}</strong></div>
+      </div>
+
+      <div className="profile-tags">
+        {profile.selling_points.slice(0, 3).map((item) => <span key={item}>{item}</span>)}
+      </div>
 
       {expanded && (
-        <div className="dossier-more open">
-          <div className="more-inner more-grid">
-            <div className="more-item">
-              <h4>品牌语气</h4>
-              <p>{profile.brand_tone}</p>
-            </div>
-            <div className="more-item">
-              <h4>语气红线</h4>
-              <ul>{profile.tone_taboos.map((t) => <li key={t}>{t}</li>)}</ul>
-            </div>
-            <div className="more-item">
-              <h4>选题倾向</h4>
-              <ul>{profile.topic_preferences.map((t) => <li key={t}>{t}</li>)}</ul>
-            </div>
-            <div className="more-item">
-              <h4>素材库</h4>
-              <p>{profile.scene_materials.map((m, i) => (
-                <span key={m}>{i > 0 && <br />}{m}</span>
-              ))}</p>
-            </div>
-          </div>
+        <div className="profile-more">
+          <div><small>品牌语气</small><p>{profile.brand_tone}</p></div>
+          <div><small>表达红线</small><p>{profile.tone_taboos.join(' · ') || '—'}</p></div>
+          <div><small>真实素材</small><p>{profile.scene_materials.join('；') || '—'}</p></div>
+          <div><small>事实证据</small><p>{profile.fact_evidence.length > 0 ? profile.fact_evidence.map((f) => `${f.label}：${f.value}`).join('；') : '暂无'}</p></div>
         </div>
       )}
 
-      <div className="dossier-actions">
-        <button className="btn" onClick={onUse} disabled={loading} style={{ flex: 1 }}>
-          {loading ? '正在装配档案并写作…' : '用此档案生成 →'}
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          aria-expanded={expanded}
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? '收起完整档案' : '展开完整档案'} <span className="caret">▼</span>
-        </button>
+      <div className="profile-actions">
+        <button className="btn btn-primary" onClick={onUse} disabled={loading}>{loading ? '正在装配…' : '用这个档案跑一次'} <span>→</span></button>
+        <button type="button" className="text-btn" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? '收起详情' : '查看档案详情'} <span>{expanded ? '↑' : '↓'}</span></button>
       </div>
     </article>
   )
-}
-
-function spineLabel(p: ProfileFull): string {
-  if (p.profile_id === 'laoshaofang') return '窖藏十年'
-  if (p.profile_id === 'qingxi') return '小坛柔和'
-  return p.lifestyle_scene.slice(0, 4) || '档案'
 }
