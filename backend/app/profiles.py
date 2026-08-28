@@ -1,49 +1,51 @@
-"""酒阵 Agent · 一厂一档品牌档案库（个性化定制机制）
+"""酒阵 Agent · 一厂一档品牌档案库（演示数据）"""
+from .models import BrandProfile, FactEvidence
 
-机制说明（演示讲解用）：
-- 灵感来源：烽火AI「一客一工作区」矩阵运营 + 领航知识库「先装配上下文再创作」
-- 每家酒厂建档一次（品牌语气红线、选题倾向、场景素材库），生成时按档案装配
-- 档案即提示词工程：同一瓶酒，不同档案生成的内容风格完全不同
-- 48h 演示版用内存存储；正式版换 SQLite/飞书多维表格，机制不变
-"""
-from .models import BrandProfile
-
-# 内置两条演示档案：同一价位带，风格差异一眼可见
 _DEMO_PROFILES: dict[str, BrandProfile] = {
     "laoshaofang": BrandProfile(
         profile_id="laoshaofang",
         distillery_name="茅台镇老烧坊",
-        positioning="茅台镇 388 元的实在坤沙，把产区的底气讲成人话",
+        positioning="茅台镇 388 元的实在酱酒，把产区的底气讲成人话",
         lifestyle_scene="周末炖菜、老友上门",
         location="贵州遵义·茅台镇",
         product_name="老烧坊·窖藏10",
         price_range="388元",
-        target_audience="30-45岁男性、商务送礼与自饮兼顾",
+        target_audience="30-45岁品质自饮与熟人聚餐人群",
         selling_points=["大曲坤沙", "老酒勾调", "赤水河谷产区"],
-        brand_tone="朴实、产区自豪感、有匠心但不装",
-        tone_taboos=["不得意腔", "不吹年份", "禁『赶快下单』类催促"],
-        topic_preferences=["酿造工艺", "老师傅故事", "产区风物"],
+        brand_tone="朴实、可信、有生活感",
+        tone_taboos=["不得意腔", "不吹年份", "不用绝对化词汇"],
+        topic_preferences=["酿造工艺", "老师傅故事", "产区风物", "家庭聚餐"],
         scene_materials=[
-            "酒师傅凌晨四点看酒醅，说这时候的酸香最骗不了人",
-            "曲仓里温度计挂了一排，但老师傅还是先用手背贴",
+            "演示素材：酒师傅凌晨四点查看酒醅",
+            "演示素材：曲仓温度记录与人工巡检",
+        ],
+        fact_evidence=[
+            FactEvidence(label="工艺", value="大曲坤沙", source="演示档案"),
+            FactEvidence(label="产品", value="老酒勾调", source="演示档案"),
+            FactEvidence(label="产区", value="赤水河谷产区", source="演示档案"),
         ],
     ),
     "qingxi": BrandProfile(
         profile_id="qingxi",
         distillery_name="青溪酒厂",
-        positioning="168 元的小坛柔和，年轻人佐餐不用仪式感",
-        lifestyle_scene="烧烤摊、朋友小聚、下班小酌",
+        positioning="168 元小坛酒，从朋友小聚和日常佐餐切入",
+        lifestyle_scene="烧烤夜宵、朋友小聚、日常佐餐",
         location="贵州遵义·习水县",
         product_name="青溪·小坛",
         price_range="168元",
-        target_audience="25-35岁年轻人、朋友小聚、佐餐日常",
-        selling_points=["小坛储存", "42度柔和", "开坛即饮不用醒"],
+        target_audience="25-35岁成年朋友小聚与日常佐餐人群",
+        selling_points=["小坛储存", "42度", "小规格"],
         brand_tone="轻松、实在、像会喝酒的朋友在聊天",
-        tone_taboos=["不摆大师腔", "不讲玄学", "禁『尊贵』类词汇"],
-        topic_preferences=["年轻人酒桌", "佐餐搭配", "小聚场景"],
+        tone_taboos=["不摆大师腔", "不讲玄学", "不用『尊贵』类词汇"],
+        topic_preferences=["朋友小聚", "佐餐搭配", "夜宵场景"],
         scene_materials=[
-            "周五晚上，镇上烧烤摊一半的桌子上摆的是青溪小坛",
-            "酒厂门口就是青溪河，工人们下班顺手拎一坛回家",
+            "演示素材：周五夜宵摊的朋友聚餐场景",
+            "演示素材：酒厂周边的本地餐饮场景",
+        ],
+        fact_evidence=[
+            FactEvidence(label="储存", value="小坛储存", source="演示档案"),
+            FactEvidence(label="酒精度", value="42度", source="演示档案"),
+            FactEvidence(label="规格", value="小规格", source="演示档案"),
         ],
     ),
 }
@@ -54,12 +56,10 @@ def get_profile(profile_id: str) -> BrandProfile | None:
 
 
 def list_profiles() -> list[BrandProfile]:
-    """返回完整档案（案例馆档案卡需要全部字段做展开展示与表单回填）。"""
     return list(_DEMO_PROFILES.values())
 
 
 def profile_to_info(p: BrandProfile):
-    """档案 → 生成输入（装配动作：档案里的场景素材自动注入）"""
     from .models import DistilleryInfo
     return DistilleryInfo(
         name=p.distillery_name,
@@ -69,7 +69,10 @@ def profile_to_info(p: BrandProfile):
         target_audience=p.target_audience,
         selling_points=p.selling_points,
         consume_scene=p.lifestyle_scene or None,
+        marketing_goal="消费者动销",
+        existing_channels=["朋友圈", "短视频", "公众号"],
         brand_tone=p.brand_tone,
         tone_taboos=list(p.tone_taboos),
+        fact_evidence=list(p.fact_evidence),
         extra_material="；".join(p.scene_materials) if p.scene_materials else None,
     )
