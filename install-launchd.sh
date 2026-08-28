@@ -1,10 +1,8 @@
 #!/bin/zsh
-# 酒阵 Agent · 用户级 LaunchAgent（登录即启动、崩溃自动拉起）
-# 安装：zsh /Volumes/资料盘/Projects/jiuzhen-agent/install-launchd.sh
+# 酒阵 Agent · 用户级 LaunchAgent（登录自启、崩溃自动拉起）
 set -e
-ROOT="/Volumes/资料盘/Projects/jiuzhen-agent"
+ROOT="$HOME/Projects/jiuzhen-agent"
 PLIST_DIR="$HOME/Library/LaunchAgents"
-NODE_BIN="$(dirname $(readlink -f $ROOT/frontend/node_modules/.bin/vite 2>/dev/null || echo x))/../node"
 NODE_BIN=$(command -v node)
 VITE_JS="$ROOT/frontend/node_modules/vite/bin/vite.js"
 UVICORN="$ROOT/backend/.venv/bin/uvicorn"
@@ -72,10 +70,6 @@ cat > "$PLIST_DIR/cn.xiaojun.jiuzhen-front.plist" << EOF
 </dict>
 </plist>
 EOF
-
-if [ ! -d "$ROOT/frontend/dist" ]; then
-  cd "$ROOT/frontend" && npm run build
-fi
 
 launchctl bootout gui/$(id -u)/cn.xiaojun.jiuzhen 2>/dev/null || true
 launchctl bootout gui/$(id -u)/cn.xiaojun.jiuzhen-front 2>/dev/null || true
