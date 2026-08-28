@@ -26,6 +26,22 @@ jobs:
           python -m compileall -q backend/app
           PYTHONPATH=backend python -c "from app.main import app; print(app.title)"
 
+      - name: Check consumer content separation
+        run: |
+          PYTHONPATH=backend python - <<'PY'
+          from app.profiles import get_profile, profile_to_info
+          from app.pipeline import run_pipeline
+
+          profile = get_profile('qingxi')
+          assert profile is not None
+          contents, _ = run_pipeline(profile_to_info(profile))
+          banned = ('品牌心智', '营销机会', '目标消费者', '策略建议', '先回答一个问题')
+          for item in contents:
+              for word in banned:
+                  assert word not in item.body, f'{item.channel} contains strategy jargon: {word}'
+          print('consumer content separation ok')
+          PY
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
