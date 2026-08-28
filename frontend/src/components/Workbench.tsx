@@ -12,6 +12,7 @@ interface WorkbenchProps {
   error: string | null
 }
 
+// 酿见营销工作台：左侧引导输入，右侧展示 Agent 的策略、内容与检查结果。
 const Workbench = forwardRef<HTMLDivElement, WorkbenchProps>(function Workbench(
   { form, onFormChange, result, onGenerate, loading, error },
   ref,
