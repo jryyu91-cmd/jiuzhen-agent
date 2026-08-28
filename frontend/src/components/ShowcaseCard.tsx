@@ -45,7 +45,7 @@ export default function ShowcaseCard({ profile, index, onUse, loading }: Showcas
       )}
 
       <div className="profile-actions">
-        <button className="btn btn-primary" onClick={onUse} disabled={loading}>{loading ? '正在装配…' : '用这个档案跑一次'} <span>→</span></button>
+        <button className="btn btn-primary" onClick={onUse} disabled={loading}>{loading ? '酿见正在分析…' : '让酿见用这个档案分析'} <span>→</span></button>
         <button type="button" className="text-btn" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? '收起详情' : '查看档案详情'} <span>{expanded ? '↑' : '↓'}</span></button>
       </div>
     </article>
