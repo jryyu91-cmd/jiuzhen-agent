@@ -105,6 +105,8 @@ class MarketingDiagnosis(BaseModel):
     scene_opportunities: list[SceneOpportunity] = Field(default_factory=list)
     channel_plan: list[str] = Field(default_factory=list)
     next_action: str
+    reasoning_mode: str = "rules"
+    reasoning_basis: list[str] = Field(default_factory=list)
 
 
 class GeneratedContent(BaseModel):
