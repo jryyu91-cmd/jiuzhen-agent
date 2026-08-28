@@ -22,9 +22,25 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
 
   const copyActive = async () => {
     if (!active) return
-    await navigator.clipboard?.writeText([active.title, active.body].filter(Boolean).join('\n\n'))
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1400)
+    const text = [active.title, active.body].filter(Boolean).join('\n\n')
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const el = document.createElement('textarea')
+        el.value = text
+        el.style.position = 'fixed'
+        el.style.opacity = '0'
+        document.body.appendChild(el)
+        el.select()
+        document.execCommand('copy')
+        el.remove()
+      }
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1400)
+    } catch {
+      setCopied(false)
+    }
   }
 
   if (loading) {
