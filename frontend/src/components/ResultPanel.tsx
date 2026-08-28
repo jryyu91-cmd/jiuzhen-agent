@@ -115,7 +115,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
                 </section>
 
                 <section className="result-section">
-                  <div className="section-title-row"><div><span className="section-kicker">EVIDENCE</span><h4>可追溯事实</h4></div><small>点击发布前，人能回看 AI 依据</small></div>
+                  <div className="section-title-row"><div><span className="section-kicker">EVIDENCE</span><h4>可追溯事实</h4></div><small>发布前可以回看 AI 依据</small></div>
                   {material.extracted_facts.length > 0 ? (
                     <div style={{ display: 'grid', gap: 10 }}>
                       {material.extracted_facts.map((fact, idx) => (
@@ -154,6 +154,21 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
               <span className="section-kicker">CORE JUDGEMENT</span>
               <h3>{result.diagnosis.core_problem}</h3>
               <p>{result.diagnosis.strategy}</p>
+            </section>
+
+            <section className="result-section">
+              <div className="section-title-row">
+                <div><span className="section-kicker">WHY THIS JUDGEMENT</span><h4>这次判断是怎么来的</h4></div>
+                <small>{result.diagnosis.reasoning_mode === 'llm' ? 'AI 受证据约束推理' : '可解释规则兜底'}</small>
+              </div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                {result.diagnosis.reasoning_basis.map((basis, idx) => (
+                  <div key={`${basis}-${idx}`} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', border: '1px solid #e5e7e5', background: '#fff', borderRadius: 12, fontSize: 11.5, color: '#545b63' }}>
+                    <span style={{ color: '#5b5bd6', fontWeight: 800 }}>0{idx + 1}</span><span>{basis}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: '10px 0 0', fontSize: 10.5, color: '#8a9098' }}>这里展示的是判断依据，不代表场景建议已经被市场验证；真实经营反馈会决定下一轮是否继续。</p>
             </section>
 
             <section className="result-section">
