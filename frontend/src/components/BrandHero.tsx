@@ -26,7 +26,7 @@ export default function BrandHero() {
           <div className="eyebrow"><span className="live-dot" /> AI × 白酒消费新场景</div>
           <h1>先看见消费者，<br />再决定这瓶酒<span>怎么卖。</span></h1>
           <p className="hero-sub">
-            中小酒企不需要先学会营销。把产品底子交给酿见，它先判断人群和生活场景，再给出内容方案、事实核验与营销风险检查。
+            当白酒从单一宴饮走向更多日常消费场景，中小酒企最缺的不只是文案，而是判断。把产品底子交给酿见，它先找人群和生活场景，再给出内容方案、事实核验与营销风险检查。
           </p>
           <div className="hero-actions">
             <button className="btn btn-primary" onClick={() => go('workbench')}>开始一次营销诊断 <span>→</span></button>
