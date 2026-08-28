@@ -101,6 +101,7 @@ def gen_wechat(info: DistilleryInfo) -> GeneratedContent:
     title = title_map.get(scene["key"], "有些酒，放在家常饭桌上反而更顺眼")
 
     fact_block = "\n\n".join(x for x in [facts, price] if x)
+    fact_section = f"\n\n{fact_block}" if fact_block else ""
     anchor_block = f"\n\n还有一个我会想多看两眼的细节：{anchor}。\n\n这种东西不用讲得很大，留在镜头里、文章里，慢慢讲就行。" if anchor else ""
 
     body = f"""{scene['moment']}。
@@ -109,7 +110,7 @@ def gen_wechat(info: DistilleryInfo) -> GeneratedContent:
 
 桌上放一瓶{info.product_name}。
 
-酒放在这里，不需要抢什么戏。菜是热的，人是熟的，大家把这顿饭吃完，已经很好。{f'\n\n{fact_block}' if fact_block else ''}{anchor_block}
+酒放在这里，不需要抢什么戏。菜是热的，人是熟的，大家把这顿饭吃完，已经很好。{fact_section}{anchor_block}
 
 我反而挺喜欢这种状态。
 
@@ -154,7 +155,7 @@ def gen_video_script(info: DistilleryInfo) -> GeneratedContent:
     points = _verified_points(info)
     fact_voice = "、".join(points[:3])
     price_part = f"，{info.price_range}" if info.price_range else ""
-    fact_part = f"。{fact_voice}" if fact_voice else ""
+    verified_voice = f"{fact_voice}。" if fact_voice else "产品信息慢慢看，先把能确认的讲清楚。"
 
     body = f"""【时长】约 30 秒 · 竖屏 9:16
 
@@ -168,7 +169,7 @@ def gen_video_script(info: DistilleryInfo) -> GeneratedContent:
 
 【10-18s】
 画面：产品标签、包装细节，以及已经确认可以展示的产品资料。
-口播：「{fact_voice + '。' if fact_voice else '产品信息慢慢看，先把能确认的讲清楚。'}」
+口播：「{verified_voice}」
 
 【18-26s】
 画面：朋友夹菜、聊天、上菜、烧烤翻面等生活镜头，不拍饮酒动作。
