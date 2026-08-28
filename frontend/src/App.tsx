@@ -106,7 +106,7 @@ export default function App() {
               <div>
                 <span className="section-kicker">MARKETING WORKSPACE</span>
                 <h2>把一瓶酒，变成一条能执行的营销任务</h2>
-                <p>左边告诉酿见你知道什么，右边看它为什么这么判断。整个过程不要求你先懂营销。</p>
+                <p>左边只填你确定知道的内容，右边看 Agent 的判断和执行结果。目标人群、消费场景不知道都可以留空。</p>
               </div>
               <div className="workspace-legend"><span><i className="required-dot" /> 产品必填</span><span><i className="optional-dot" /> 其余可跳过</span></div>
             </div>
