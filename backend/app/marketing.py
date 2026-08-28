@@ -169,26 +169,80 @@ def _rule_diagnose(info: DistilleryInfo) -> MarketingDiagnosis:
         if small_format:
             scene_reason += "，小规格也降低了首次尝试门槛"
         scenes = [
-            SceneOpportunity("朋友小聚", f"{scene_reason}，可以优先验证非商务聚餐", "朋友、菜、时间点先出现，产品作为场景的一部分", "用现有私域/门店记录询价和成交"),
-            SceneOpportunity("居家佐餐", "适合测试从正式宴饮向家庭餐桌延伸的可能性", "家常菜、周末做饭、老友上门", "先做小范围内容测试，不在没有渠道资料时承诺购买方式"),
+            SceneOpportunity(
+                scene="朋友小聚",
+                why_fit=f"{scene_reason}，可以优先验证非商务聚餐",
+                content_angle="朋友、菜、时间点先出现，产品作为场景的一部分",
+                conversion_action="用现有私域/门店记录询价和成交",
+            ),
+            SceneOpportunity(
+                scene="居家佐餐",
+                why_fit="适合测试从正式宴饮向家庭餐桌延伸的可能性",
+                content_angle="家常菜、周末做饭、老友上门",
+                conversion_action="先做小范围内容测试，不在没有渠道资料时承诺购买方式",
+            ),
         ]
     elif bucket == "mid":
         audiences = [
-            AudienceSegment("30-45岁品质自用型成年消费者", "希望产品信息清楚、品质稳定，不愿为过度包装买单", "周末聚餐、家庭宴、朋友来访", "品质自用/熟人聚餐", "高"),
-            AudienceSegment("熟人轻礼赠人群", "需要体面、可信、信息讲得明白", "节日拜访、朋友往来、地方伴手礼", "轻礼赠", "中"),
+            AudienceSegment(
+                name="30-45岁品质自用型成年消费者",
+                need="希望产品信息清楚、品质稳定，不愿为过度包装买单",
+                trigger="周末聚餐、家庭宴、朋友来访",
+                recommended_scene="品质自用/熟人聚餐",
+                priority="高",
+            ),
+            AudienceSegment(
+                name="熟人轻礼赠人群",
+                need="需要体面、可信、信息讲得明白",
+                trigger="节日拜访、朋友往来、地方伴手礼",
+                recommended_scene="轻礼赠",
+                priority="中",
+            ),
         ]
         scenes = [
-            SceneOpportunity("家庭聚餐", "中价位可先验证品质感与日常可负担之间的平衡", "一顿家宴里的具体人物和菜", "记录内容后的咨询与到店反馈"),
-            SceneOpportunity("老友来访", "比正式宴请更轻，同时保留白酒在熟人关系中的分享属性", "朋友见面，不用强调劝酒和身份", "引导了解产品资料/线下咨询"),
+            SceneOpportunity(
+                scene="家庭聚餐",
+                why_fit="中价位可先验证品质感与日常可负担之间的平衡",
+                content_angle="一顿家宴里的具体人物和菜",
+                conversion_action="记录内容后的咨询与到店反馈",
+            ),
+            SceneOpportunity(
+                scene="老友来访",
+                why_fit="比正式宴请更轻，同时保留白酒在熟人关系中的分享属性",
+                content_angle="朋友见面，不用强调劝酒和身份",
+                conversion_action="引导了解产品资料/线下咨询",
+            ),
         ]
     else:
         audiences = [
-            AudienceSegment("品质鉴赏型成年消费者", "关注品牌可信度、产品差异和事实证据", "重要聚会、纪念日、深度品鉴", "品质鉴赏", "高"),
-            AudienceSegment("高品质礼赠人群", "需要品牌出处、包装与可信背书", "重要节庆、商务往来、纪念礼赠", "高端礼赠", "中"),
+            AudienceSegment(
+                name="品质鉴赏型成年消费者",
+                need="关注品牌可信度、产品差异和事实证据",
+                trigger="重要聚会、纪念日、深度品鉴",
+                recommended_scene="品质鉴赏",
+                priority="高",
+            ),
+            AudienceSegment(
+                name="高品质礼赠人群",
+                need="需要品牌出处、包装与可信背书",
+                trigger="重要节庆、商务往来、纪念礼赠",
+                recommended_scene="高端礼赠",
+                priority="中",
+            ),
         ]
         scenes = [
-            SceneOpportunity("深度品鉴", "高价产品需要先让消费者理解价值从哪里来", "工艺证据、批次、人物、产地细节", "预约了解/品鉴；具体方式需企业渠道资料确认"),
-            SceneOpportunity("重要礼赠", "高价产品更依赖信任资产而不是一次促销", "礼赠对象、品牌出处、产品证据", "咨询礼盒与服务；没有企业资料时不承诺库存或物流"),
+            SceneOpportunity(
+                scene="深度品鉴",
+                why_fit="高价产品需要先让消费者理解价值从哪里来",
+                content_angle="工艺证据、批次、人物、产地细节",
+                conversion_action="预约了解/品鉴；具体方式需企业渠道资料确认",
+            ),
+            SceneOpportunity(
+                scene="重要礼赠",
+                why_fit="高价产品更依赖信任资产而不是一次促销",
+                content_angle="礼赠对象、品牌出处、产品证据",
+                conversion_action="咨询礼盒与服务；没有企业资料时不承诺库存或物流",
+            ),
         ]
 
     if info.target_audience.strip():
