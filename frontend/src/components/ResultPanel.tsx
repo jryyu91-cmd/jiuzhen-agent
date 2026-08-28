@@ -12,11 +12,11 @@ const CHANNEL_LABEL: Record<string, string> = {
   video: '短视频',
 }
 
-type ResultMode = 'strategy' | 'content' | 'check'
+type ResultMode = 'materials' | 'strategy' | 'content' | 'check'
 
 export default function ResultPanel({ result, loading = false }: ResultPanelProps) {
   const [activeTab, setActiveTab] = useState<string>('wechat')
-  const [mode, setMode] = useState<ResultMode>('strategy')
+  const [mode, setMode] = useState<ResultMode>('materials')
   const [copied, setCopied] = useState(false)
   const active = result?.contents.find((c) => c.channel === activeTab) ?? result?.contents[0]
 
@@ -48,13 +48,13 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
       <div className="card result-card running-state">
         <div className="agent-orbit"><span>见</span><i /><b /></div>
         <span className="mini-label">AGENT IS WORKING</span>
-        <h3>酿见正在替你跑营销判断</h3>
-        <p>不是直接写文案，它会先把产品、人群、场景和风险串起来。</p>
+        <h3>酿见正在先读资料，再做营销判断</h3>
+        <p>资料中的事实和后面的营销推断会分开处理，避免把建议当成企业事实。</p>
         <div className="running-list">
-          <span><i className="pulse-dot" /> 识别产品与事实依据</span>
-          <span><i className="pulse-dot delay1" /> 判断优先消费者</span>
-          <span><i className="pulse-dot delay2" /> 匹配生活场景与渠道</span>
-          <span><i className="pulse-dot delay3" /> 生成并检查内容</span>
+          <span><i className="pulse-dot" /> 读取原始资料与来源</span>
+          <span><i className="pulse-dot delay1" /> 建立可追溯品牌事实</span>
+          <span><i className="pulse-dot delay2" /> 判断消费者与生活场景</span>
+          <span><i className="pulse-dot delay3" /> 生成内容并做发布检查</span>
         </div>
       </div>
     )
@@ -67,15 +67,17 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
           <span className="empty-core">见</span>
           <i className="ring ring-one" /><i className="ring ring-two" />
         </div>
-        <span className="mini-label">YOUR RESULT WILL APPEAR HERE</span>
-        <h3>先把已知信息交给酿见</h3>
-        <p>哪怕你只知道产品名和价格，也可以先跑一次。营销判断会比“先写三篇文案”更早出现。</p>
+        <span className="mini-label">YOUR MARKETING MEMORY STARTS HERE</span>
+        <h3>不用先想“怎么填营销表”</h3>
+        <p>把产品资料交进来。酿见先把可确认事实整理出来，再决定人群、场景和内容。</p>
         <div className="empty-steps">
-          <span><b>1</b> 找人群</span><i>→</i><span><b>2</b> 找场景</span><i>→</i><span><b>3</b> 出内容</span><i>→</i><span><b>4</b> 做检查</span>
+          <span><b>1</b> 读资料</span><i>→</i><span><b>2</b> 建事实</span><i>→</i><span><b>3</b> 找场景</span><i>→</i><span><b>4</b> 做营销</span>
         </div>
       </div>
     )
   }
+
+  const material = result.material_analysis
 
   return (
     <div className="card result-card">
@@ -85,6 +87,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
           <strong>{result.distillery}</strong>
         </div>
         <nav className="result-mode-tabs" aria-label="结果视图">
+          <button className={mode === 'materials' ? 'active' : ''} onClick={() => setMode('materials')}>资料事实</button>
           <button className={mode === 'strategy' ? 'active' : ''} onClick={() => setMode('strategy')}>策略诊断</button>
           <button className={mode === 'content' ? 'active' : ''} onClick={() => setMode('content')}>内容资产</button>
           <button className={mode === 'check' ? 'active' : ''} onClick={() => setMode('check')}>发布检查</button>
@@ -92,6 +95,59 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
       </div>
 
       <div className="result-body">
+        {mode === 'materials' && (
+          <div className="strategy-view">
+            {material ? (
+              <>
+                <section className="diagnosis-hero">
+                  <span className="section-kicker">SOURCE → FACT</span>
+                  <h3>先把散乱资料变成可确认、可追溯的品牌事实</h3>
+                  <p>本次读取 {material.source_names.length} 份资料，识别 {material.extracted_facts.length} 条有来源的事实。营销推断不会被混进这里。</p>
+                </section>
+
+                <section className="result-section">
+                  <div className="section-title-row"><div><span className="section-kicker">SOURCES</span><h4>本次读取的资料</h4></div><small>企业已有资料就是入口</small></div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {material.source_names.map((name) => (
+                      <span key={name} style={{ padding: '8px 11px', border: '1px solid #e5e7e5', background: '#fff', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>{name}</span>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="result-section">
+                  <div className="section-title-row"><div><span className="section-kicker">EVIDENCE</span><h4>可追溯事实</h4></div><small>点击发布前，人能回看 AI 依据</small></div>
+                  {material.extracted_facts.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 10 }}>
+                      {material.extracted_facts.map((fact, idx) => (
+                        <article key={`${fact.label}-${fact.value}-${idx}`} style={{ border: '1px solid #e5e7e5', borderRadius: 14, padding: 14, background: '#fff' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
+                            <div><span style={{ display: 'block', fontSize: 9, color: '#8a9098', marginBottom: 3 }}>{fact.label}</span><strong style={{ fontSize: 14 }}>{fact.value}</strong></div>
+                            <span style={{ fontSize: 10, color: '#178562', background: '#e8f5ef', padding: '5px 8px', borderRadius: 999 }}>✓ {fact.source}</span>
+                          </div>
+                          {fact.source_excerpt && <p style={{ margin: '10px 0 0', paddingTop: 10, borderTop: '1px solid #f0f1ef', fontSize: 11.5, color: '#697079', lineHeight: 1.65 }}>原文：{fact.source_excerpt}</p>}
+                        </article>
+                      ))}
+                    </div>
+                  ) : <div className="clean-card compact"><span>!</span><div><h4>暂时没有提取到可追溯事实</h4><p>可以补充产品手册、瓶身文字或人工确认字段。</p></div></div>}
+                </section>
+
+                {material.missing_fields.length > 0 && (
+                  <section className="next-action-card">
+                    <div><span className="section-kicker">NEEDS CONFIRMATION</span><h4>只让人补这些缺口</h4></div>
+                    <p>{material.missing_fields.join('、')}</p>
+                  </section>
+                )}
+              </>
+            ) : (
+              <section className="diagnosis-hero">
+                <span className="section-kicker">MANUAL CONFIRMATION</span>
+                <h3>本次从人工确认信息开始</h3>
+                <p>没有上传原始资料，所以酿见直接使用你确认过的产品字段。真实长期使用时，建议先建立资料与证据档案，后续任务就不需要重复填写。</p>
+              </section>
+            )}
+          </div>
+        )}
+
         {mode === 'strategy' && (
           <div className="strategy-view">
             <section className="diagnosis-hero">
@@ -115,7 +171,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
             </section>
 
             <section className="result-section">
-              <div className="section-title-row"><div><span className="section-kicker">SCENES</span><h4>场景机会</h4></div><small>白酒从“酒桌”拆成具体生活时刻</small></div>
+              <div className="section-title-row"><div><span className="section-kicker">SCENES</span><h4>场景机会</h4></div><small>从具体生活时刻，而不是抽象“酒桌”开始</small></div>
               <div className="scene-list">
                 {result.diagnosis.scene_opportunities.map((s, idx) => (
                   <article className="scene-card" key={s.scene}>
@@ -149,7 +205,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
               </nav>
               <button className="copy-btn" onClick={copyActive}>{copied ? '已复制 ✓' : '复制内容'}</button>
             </div>
-            <p style={{ margin: '0 0 18px', fontSize: 12, color: '#7a8087' }}>消费者内容草稿 · 策略判断留在“策略诊断”，不混进成品。</p>
+            <p style={{ margin: '0 0 18px', fontSize: 12, color: '#7a8087' }}>消费者内容草稿 · 策略判断留在“策略诊断”，事实依据来自“资料事实”。</p>
             {active && (
               <article className="article">
                 <div className="article-meta"><span>已按诊断结果生成</span><span>·</span><span>{CHANNEL_LABEL[active.channel]}</span></div>
