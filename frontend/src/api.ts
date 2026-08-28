@@ -1,4 +1,10 @@
-import type { DistilleryInfo, GenerateResponse, CommentResponse, ProfileFull } from './types'
+import type {
+  CommentResponse,
+  DistilleryInfo,
+  GenerateResponse,
+  MaterialExtractResponse,
+  ProfileFull,
+} from './types'
 
 // 默认走同源 /api：
 // - 本地 Vite dev 由 vite.config.ts 代理到 8000
@@ -12,6 +18,17 @@ async function json<T>(res: Response): Promise<T> {
     throw new Error(text || `HTTP ${res.status}`)
   }
   return res.json() as Promise<T>
+}
+
+/** 把企业已有 PDF / TXT / MD / CSV / JSON 和粘贴文字先读成档案草稿。 */
+export async function extractMaterials(files: File[], notes = ''): Promise<MaterialExtractResponse> {
+  const form = new FormData()
+  files.forEach((file) => form.append('files', file))
+  form.append('notes', notes)
+  return json(await fetch(`${API_BASE}/api/materials/extract`, {
+    method: 'POST',
+    body: form,
+  }))
 }
 
 /** 酿见 AI · 自定义产品营销诊断与内容生成 */
