@@ -22,7 +22,7 @@ export default function CommentsDemo({ comments, loading }: CommentsDemoProps) {
           <div>
             <span className="section-kicker">CONVERSION HANDOFF</span>
             <h2>内容发出去之后，还要有人接住咨询</h2>
-            <p>酿见根据已经确认的产品事实生成回复建议；不知道的信息不替企业承诺。</p>
+            <p>酿见根据已经确认的产品信息生成回复建议；不知道的信息不替企业承诺，避免为了“回复得快”而编事实。</p>
           </div>
           <span className="safe-note"><i /> 事实安全回复</span>
         </div>
