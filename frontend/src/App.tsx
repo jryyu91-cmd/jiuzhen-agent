@@ -26,7 +26,7 @@ export default function App() {
   const [comments, setComments] = useState<CommentResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const resultRef = useRef<HTMLDivElement>(null)
+  const workbenchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     listProfiles().then(setProfiles).catch(() => setProfiles([]))
@@ -43,7 +43,7 @@ export default function App() {
   }
 
   const scrollToResult = () =>
-    resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -92,27 +92,37 @@ export default function App() {
   return (
     <div className="page">
       <BrandHero />
-      <main className="layout">
+      <main>
         <ShowcaseGallery profiles={profiles} onUseProfile={handleUseProfile} loading={loading} />
+
         <section className="section" id="workbench">
-          <header className="section-head">
-            <h2>🛠️ 自由生成</h2>
-            <p className="section-sub">没有档案也能用：手动填酒厂信息，流水线一样跑。</p>
-          </header>
-          <Workbench
-            ref={resultRef}
-            form={form}
-            onFormChange={setForm}
-            result={result}
-            onGenerate={handleGenerate}
-            loading={loading}
-            error={error}
-          />
+          <div className="wrap">
+            <div className="workbench-head">
+              <h2>内容工作台</h2>
+              <p className="sub">填四张卡，交给 Agent；语气跟着档案走，红线自动避开。</p>
+            </div>
+            <Workbench
+              ref={workbenchRef}
+              form={form}
+              onFormChange={setForm}
+              result={result}
+              onGenerate={handleGenerate}
+              loading={loading}
+              error={error}
+            />
+          </div>
         </section>
+
         <CommentsDemo comments={comments} loading={loading} />
       </main>
-      <footer className="page-footer">
-        酒阵 Agent · 贵客松 2026 赛道二（AI×白酒）· 48h 演示版：模板+规则引擎驱动，离线可跑；LLM 接入开关已预留
+      <footer className="footer">
+        <div className="wrap">
+          <span className="brand">酒阵 Agent</span>
+          <span className="dot">·</span>
+          <span>贵客松 2026 赛道二（AI×白酒）</span>
+          <span className="dot">·</span>
+          <span>48h 演示版：模板+规则引擎驱动，离线可跑，LLM 接入开关已预留</span>
+        </div>
       </footer>
     </div>
   )

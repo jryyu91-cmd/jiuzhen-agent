@@ -3,59 +3,84 @@ import type { ProfileFull } from '../types'
 
 interface ShowcaseCardProps {
   profile: ProfileFull
+  index: number
   onUse: () => void
   loading: boolean
 }
 
-export default function ShowcaseCard({ profile, onUse, loading }: ShowcaseCardProps) {
+// 区块② 单张卷宗档案卡：编号 + 衬线名 + 酒标竖排条 + 红章 + 可展开档案详情
+export default function ShowcaseCard({ profile, index, onUse, loading }: ShowcaseCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const num = String(index + 1).padStart(3, '0')
 
   return (
-    <article className="showcase-card">
-      <header className="showcase-head">
-        <h3>{profile.distillery_name}</h3>
-        <span className="showcase-meta">{profile.product_name} · {profile.price_range} · {profile.location}</span>
-      </header>
-      <p className="showcase-positioning">「{profile.positioning}」</p>
-      <p className="showcase-scene">生活场景：{profile.lifestyle_scene}</p>
+    <article className="card dossier">
+      <span className="seal" aria-hidden="true">档案</span>
+      <div className="dossier-top">
+        <span className="dossier-num">编号 JZ-2025-{num}</span>
+        <div className="dossier-info">
+          <h3>{profile.distillery_name}</h3>
+          <p className="positioning">
+            <strong>定位</strong>｜{profile.positioning || `${profile.product_name}，把产区的底气讲成人话`}
+          </p>
+        </div>
+        <span className="wine-spine">{spineLabel(profile)}</span>
+      </div>
+      <dl className="dossier-body">
+        <div className="dossier-field">
+          <dt>产品</dt>
+          <dd>{profile.product_name}<span className="sep">·</span>{profile.price_range}<span className="sep">·</span>{profile.location}</dd>
+        </div>
+        <div className="dossier-field">
+          <dt>生活场景</dt>
+          <dd>{profile.lifestyle_scene || '—'}</dd>
+        </div>
+      </dl>
 
       {expanded && (
-        <dl className="showcase-detail">
-          <div>
-            <dt>品牌语气</dt>
-            <dd>{profile.brand_tone}</dd>
+        <div className="dossier-more open">
+          <div className="more-inner more-grid">
+            <div className="more-item">
+              <h4>品牌语气</h4>
+              <p>{profile.brand_tone}</p>
+            </div>
+            <div className="more-item">
+              <h4>语气红线</h4>
+              <ul>{profile.tone_taboos.map((t) => <li key={t}>{t}</li>)}</ul>
+            </div>
+            <div className="more-item">
+              <h4>选题倾向</h4>
+              <ul>{profile.topic_preferences.map((t) => <li key={t}>{t}</li>)}</ul>
+            </div>
+            <div className="more-item">
+              <h4>素材库</h4>
+              <p>{profile.scene_materials.map((m, i) => (
+                <span key={m}>{i > 0 && <br />}{m}</span>
+              ))}</p>
+            </div>
           </div>
-          <div>
-            <dt>语气红线</dt>
-            <dd>{profile.tone_taboos.length ? profile.tone_taboos.join('；') : '无'}</dd>
-          </div>
-          <div>
-            <dt>选题倾向</dt>
-            <dd>{profile.topic_preferences.join('；')}</dd>
-          </div>
-          <div>
-            <dt>场景素材库</dt>
-            <dd>
-              <ul>
-                {profile.scene_materials.map((m) => <li key={m}>{m}</li>)}
-              </ul>
-            </dd>
-          </div>
-          <div>
-            <dt>目标人群</dt>
-            <dd>{profile.target_audience}</dd>
-          </div>
-        </dl>
+        </div>
       )}
 
-      <footer className="showcase-actions">
-        <button className="ghost" onClick={() => setExpanded(!expanded)}>
-          {expanded ? '收起档案 ▲' : '展开完整档案 ▼'}
-        </button>
-        <button className="primary" onClick={onUse} disabled={loading}>
+      <div className="dossier-actions">
+        <button className="btn" onClick={onUse} disabled={loading} style={{ flex: 1 }}>
           {loading ? '正在装配档案并写作…' : '用此档案生成 →'}
         </button>
-      </footer>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          aria-expanded={expanded}
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? '收起完整档案' : '展开完整档案'} <span className="caret">▼</span>
+        </button>
+      </div>
     </article>
   )
+}
+
+function spineLabel(p: ProfileFull): string {
+  if (p.profile_id === 'laoshaofang') return '窖藏十年'
+  if (p.profile_id === 'qingxi') return '小坛柔和'
+  return p.lifestyle_scene.slice(0, 4) || '档案'
 }

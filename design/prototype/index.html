@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>酒阵 Agent · 白酒生活方式品牌智能体（视觉定稿原型）</title>
+<!--
+  ============================================================
+  酒阵 Agent · 贵客松 2026 赛道二（AI×白酒）· 48h 演示版
+  高保真原型 · 单文件 · 零外部依赖
+  设计系统：Editorial × Soft Warm（白酒生活方式 · 精品咖啡官网质感）
+  令牌来源：彩格调 Phase2 交付令牌（全量采用为 :root）
+  架构来源：许明需 Phase1 四区块信息架构
+  ============================================================
+-->
+<style>
+/* ============================================================
+   00 · 设计令牌（照抄彩格调交付，不得改动）
+   ============================================================ */
+:root{
+  --bg:#f6f2ea; --panel:#fbf9f5; --surface-warm:#f1e9dc;
+  --ink:#2b2118; --ink-soft:#63564b;
+  --accent:#8c2f1c; --accent-deep:#7a2818; --accent-ink:#5e1f12;
+  --accent-soft:#f3e3da; --gold:#b08d57;
+  --border:#e5dccd; --border-strong:#d4c7b2;
+  --success:#4a7c59; --success-deep:#3d6a4c;
+  --radius:12px; --radius-sm:8px; --radius-xs:4px; --radius-lg:16px;
+  --shadow:0 1px 2px rgba(58,34,20,.06),0 4px 16px rgba(58,34,20,.08);
+  --shadow-hover:0 2px 4px rgba(58,34,20,.08),0 12px 32px rgba(58,34,20,.14);
+  --highlight:inset 0 1px 0 rgba(255,255,255,.65);
+  --t-fast:150ms; --t-base:240ms; --t-slow:400ms;
+  --ease:cubic-bezier(.2,.6,.2,1);
+  --font-sans:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --font-serif:"Songti SC","Noto Serif SC","STSong",Georgia,serif;
+}
+
+/* ============================================================
+   01 · 全局 Reset 与基础排版
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;text-size-adjust:100%}
+body{
+  font-family:var(--font-sans);
+  background:var(--bg);
+  color:var(--ink);
+  font-size:16px;
+  line-height:1.7;
+}
+h1,h2,h3{font-family:var(--font-serif);font-weight:600;line-height:1.3}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+::placeholder{color:#7d6e5a}
+
+/* ============================================================
+   02 · 布局骨架
+   ============================================================ */
+.wrap{max-width:1160px;margin:0 auto;padding:0 48px}
+.section{padding:88px 0 0}
+.section:last-of-type{padding-bottom:88px}
+
+/* ============================================================
+   03 · 通用组件 · 按钮三态
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:0 26px;height:46px;
+  background:var(--accent);color:#fdf9f4;
+  font-size:15px;letter-spacing:.04em;
+  border-radius:var(--radius-sm);
+  box-shadow:var(--highlight),0 1px 2px rgba(58,34,20,.12);
+  transition:background var(--t-base) var(--ease),
+             box-shadow var(--t-base) var(--ease),
+             transform var(--t-fast) var(--ease);
+}
+.btn:hover{
+  background:var(--accent-deep);
+  box-shadow:var(--shadow-hover);
+  transform:translateY(-1px);
+}
+.btn:active{background:var(--accent-ink);transform:translateY(0)}
+.btn:disabled{background:var(--accent-soft);color:var(--accent);cursor:not-allowed;box-shadow:none}
+.btn-block{width:100%}
+/* 幽灵按钮：档案卡上的「展开完整档案」 */
+.btn-ghost{
+  background:transparent;color:var(--accent);
+  box-shadow:inset 0 0 0 1px var(--border-strong);
+}
+.btn-ghost:hover{
+  background:var(--accent-soft);color:var(--accent-deep);
+  box-shadow:inset 0 0 0 1px var(--border-strong);
+  transform:none;
+}
+.btn-ghost .caret{display:inline-block;transition:transform var(--t-base) var(--ease)}
+.btn-ghost[aria-expanded="true"] .caret{transform:rotate(180deg)}
+
+/* ============================================================
+   04 · 通用组件 · 输入框 / 文本域
+   ============================================================ */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.05em}
+.field input,.field textarea{
+  height:44px;width:100%;
+  padding:0 14px;
+  background:#fdfbf8;
+  border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  outline:none;color:var(--ink);font-size:14.5px;
+  transition:border-color var(--t-base) var(--ease),box-shadow var(--t-base) var(--ease);
+}
+.field textarea{height:auto;min-height:96px;padding:12px 14px;resize:vertical;line-height:1.7}
+.field input:focus,.field textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(140,47,28,.15);
+}
+.field input:focus-visible,.field textarea:focus-visible{outline:none}
+
+/* ============================================================
+   05 · 通用组件 · 卡片三层
+   ============================================================ */
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--highlight),var(--shadow);
+  transition:box-shadow var(--t-base) var(--ease),transform var(--t-base) var(--ease);
+}
+.card:hover{box-shadow:var(--highlight),var(--shadow-hover)}
+
+/* ============================================================
+   06 · 通用组件 · Tab 文字式 + 2px 指示条
+   ============================================================ */
+.tabs{display:flex;gap:32px;border-bottom:1px solid var(--border)}
+.tab{
+  position:relative;padding:14px 2px;
+  font-size:15px;color:var(--ink-soft);letter-spacing:.04em;
+  transition:color var(--t-fast) var(--ease);
+}
+.tab::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:var(--accent);transform:scaleX(0);
+  transition:transform var(--t-base) var(--ease);
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);font-weight:600}
+.tab[aria-selected="true"]::after{transform:scaleX(1)}
+
+/* ============================================================
+   07 · 通用组件 · 眉题双细线
+   ============================================================ */
+.kicker{
+  display:flex;align-items:center;gap:18px;
+  font-size:13px;font-weight:600;letter-spacing:.28em;
+  color:var(--accent);text-indent:.28em; /* 视觉平衡字距 */
+}
+.kicker::before,.kicker::after{content:"";height:1px;background:var(--accent);opacity:.45}
+.kicker::before{width:56px}
+.kicker::after{width:56px}
+
+/* ============================================================
+   08 · 区块① · Hero（左对齐非对称 + 右上 radial 微光）
+   ============================================================ */
+.hero{position:relative;overflow:hidden;padding:110px 0 84px}
+.hero::before{ /* 右上 accent-soft radial 微光，存在感 ≤8% */
+  content:"";position:absolute;top:-220px;right:-180px;width:640px;height:640px;
+  background:radial-gradient(circle at center,rgba(243,227,218,.75) 0%,rgba(243,227,218,0) 62%);
+  pointer-events:none;
+}
+.hero .wrap{position:relative}
+.hero .kicker{justify-content:flex-start}
+.hero .kicker::after{flex:0 0 auto}
+.hero-kicker{margin-bottom:34px}
+.hero h1{
+  font-size:64px;font-weight:700;letter-spacing:.01em;
+  max-width:15.5em;line-height:1.28;
+  margin-bottom:26px;
+}
+.hero h1 .accent-word{color:var(--accent)}
+.hero-sub{
+  max-width:36em;font-size:18px;color:var(--ink-soft);
+  margin-bottom:64px;line-height:1.9;
+}
+.hero-sub .dash{color:var(--gold)}
+
+/* 痛点三缺卡 */
+.pains{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:72px}
+.pain{padding:30px 28px 26px}
+.pain-tag{
+  display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.14em;
+  color:var(--accent);background:var(--accent-soft);
+  padding:3px 10px;border-radius:var(--radius-xs);margin-bottom:16px;
+}
+.pain h3{font-size:20px;margin-bottom:8px}
+.pain p{font-size:14.5px;color:var(--ink-soft)}
+.pain p em{font-style:normal;color:var(--accent);font-weight:600}
+
+/* ROI 对比双 bar */
+.roi{
+  padding:36px 36px 32px;
+  max-width:860px;
+}
+.roi-head{display:flex;align-items:baseline;gap:14px;margin-bottom:26px}
+.roi-head h3{font-size:19px}
+.roi-head span{font-size:13px;color:var(--ink-soft);letter-spacing:.04em}
+.roi-row{margin-bottom:20px}
+.roi-row:last-of-type{margin-bottom:0}
+.roi-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.roi-label{font-size:13.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.04em}
+.roi-value{font-family:var(--font-serif);font-weight:700;font-size:14.5px;color:var(--ink)}
+.roi-track{height:12px;border-radius:999px;background:var(--surface-warm);overflow:hidden}
+.roi-bar{
+  height:100%;width:0;border-radius:999px; /* 进场动画：JS 置目标宽度 */
+  transition:width var(--t-slow) var(--ease);
+}
+.roi-bar.muted{background:linear-gradient(90deg,var(--border-strong),#c9bda8)}
+.roi-bar.grad{background:linear-gradient(90deg,var(--accent-ink),var(--accent) 55%,#a64730)}
+.roi-badge{
+  display:inline-block;margin-left:12px;
+  font-size:12px;font-weight:700;letter-spacing:.04em;
+  color:var(--success-deep);background:rgba(74,124,89,.1);
+  border:1px solid rgba(74,124,89,.3);
+  padding:2px 10px;border-radius:999px;
+  vertical-align:2px;white-space:nowrap;
+}
+
+/* ============================================================
+   09 · 区块② · 案例展示馆（卷宗档案卡）
+   ============================================================ */
+.case-head{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:12px}
+.case-head h2{font-size:34px}
+.case-head .sub{font-size:14px;color:var(--ink-soft);letter-spacing:.04em;margin-top:6px}
+/* 「以下为演示案例」虚线骑缝章徽标 */
+.stamp-badge{
+  flex-shrink:0;
+  font-size:12.5px;font-weight:600;letter-spacing:.08em;
+  color:var(--accent);
+  background:var(--accent-soft);
+  border:1px dashed rgba(140,47,28,.4);
+  border-radius:var(--radius-xs);
+  padding:6px 14px;
+}
+.case-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;margin-top:34px}
+
+/* 卷宗档案卡 */
+.dossier{display:flex;flex-direction:column;overflow:hidden;position:relative}
+.dossier-top{
+  display:flex;align-items:flex-start;gap:18px;
+  padding:24px 24px 20px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.dossier-top::before,.dossier-top::after{ /* 卷宗双线框 */
+  content:"";position:absolute;left:12px;right:12px;height:1px;background:var(--border-strong);
+}
+.dossier-top::before{top:8px}
+.dossier-top::after{bottom:8px}
+.dossier-num{
+  font-size:11.5px;font-weight:600;letter-spacing:.12em;
+  color:var(--ink-soft);background:var(--surface-warm);
+  padding:3px 9px;border-radius:var(--radius-xs);
+  white-space:nowrap;
+}
+.dossier-info{flex:1;min-width:0}
+.dossier-info h3{font-size:24px;margin-bottom:6px}
+.dossier-info .positioning{font-size:13.5px;color:var(--ink-soft);line-height:1.65}
+.dossier-info .positioning strong{color:var(--accent);font-weight:600}
+
+/* 右侧酒标竖排条 */
+.wine-spine{
+  flex-shrink:0;position:relative;
+  writing-mode:vertical-rl;
+  font-family:var(--font-serif);font-weight:700;
+  font-size:17px;letter-spacing:.34em;
+  color:var(--accent);
+  background:linear-gradient(180deg,#fdf8f0,var(--accent-soft));
+  border:1px solid var(--border-strong);
+  border-radius:var(--radius-xs);
+  padding:14px 7px;
+  box-shadow:var(--highlight);
+  min-height:118px;
+}
+/* 红章：-6° 旋转圆形描边章 */
+.seal{
+  position:absolute;right:14px;bottom:12px;z-index:2;
+  width:52px;height:52px;border-radius:50%;
+  border:2px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  transform:rotate(-6deg);
+  color:var(--accent);
+  font-family:var(--font-serif);font-weight:700;font-size:15px;
+  letter-spacing:2px;text-indent:2px;
+  background:rgba(251,249,245,.72);
+  opacity:.88;pointer-events:none;
+}
+.dossier-body{padding:20px 24px 22px;display:grid;gap:14px}
+.dossier-field{display:flex;gap:12px;font-size:13.5px;align-items:baseline}
+.dossier-field dt{flex-shrink:0;width:64px;font-size:12.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.06em}
+.dossier-field dd{color:var(--ink)}
+.dossier-field dd .sep{color:var(--gold);margin:0 6px}
+
+/* 展开区（JS toggle） */
+.dossier-more{
+  display:none;padding:0 24px 22px;
+}
+.dossier-more.open{display:block}
+.more-inner{
+  background:var(--surface-warm);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:20px 22px;
+}
+.more-grid{display:grid;gap:14px}
+.more-grid h4{
+  font-size:12.5px;font-weight:700;letter-spacing:.1em;
+  color:var(--accent);margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.more-grid h4::before{content:"";width:14px;height:1px;background:var(--gold)}
+.more-grid p,.more-grid ul{font-size:13.5px;color:var(--ink);line-height:1.75}
+.more-grid ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.more-grid li{
+  font-size:12.5px;color:var(--ink-soft);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:999px;padding:2px 11px;
+}
+.more-item p{color:var(--ink-soft)}
+.dossier-actions{
+  display:flex;gap:12px;align-items:center;
+  padding:18px 24px 22px;border-top:1px solid var(--border);
+}
+.dossier-actions .btn{height:42px;font-size:14px}
+
+/* ============================================================
+   10 · 区块③ · 内容工作台（左表单 · 右结果）
+   ============================================================ */
+.workbench{display:grid;grid-template-columns:440px 1fr;gap:28px;margin-top:40px}
+.workbench-head{margin-bottom:8px}
+.workbench-head h2{font-size:34px;margin-bottom:6px}
+.workbench-head .sub{font-size:14px;color:var(--ink-soft)}
+
+/* 左侧 · 卷宗式表单分组卡 */
+.form-card{padding:26px 26px 28px;display:flex;flex-direction:column;gap:22px}
+.form-group{position:relative;padding-left:52px}
+.form-group .serial{
+  position:absolute;left:0;top:0;
+  font-family:var(--font-serif);font-weight:700;
+  font-size:21px;color:var(--accent);
+  line-height:1.15;
+}
+.form-group .serial small{
+  display:block;font-family:var(--font-sans);
+  font-size:10.5px;font-weight:600;letter-spacing:.1em;
+  color:var(--gold);margin-top:2px;
+}
+.form-group h3{font-size:17px;margin-bottom:4px}
+.form-group .g-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group + .form-group{border-top:1px solid var(--border);padding-top:22px}
+
+/* 生成按钮 */
+.gen-btn{margin-top:2px;position:relative}
+.gen-btn .spark{color:#e9c9a8;font-size:15px}
+
+/* 右侧 · 结果面板 */
+.result-card{display:flex;flex-direction:column;overflow:hidden}
+.result-head{padding:20px 26px 0}
+.result-body{padding:24px 26px 26px;display:flex;flex-direction:column;gap:22px;flex:1}
+.article h4{
+  font-size:12.5px;font-weight:700;letter-spacing:.12em;
+  color:var(--gold);margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.article h4::after{content:"";flex:1;height:1px;background:var(--border)}
+.article h5{font-family:var(--font-serif);font-size:19px;margin-bottom:10px;line-height:1.5}
+.article p{font-size:14.5px;color:var(--ink);line-height:1.85;margin-bottom:12px}
+.article p:last-child{margin-bottom:0}
+.article .lede{color:var(--ink-soft)}
+.result-placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:26px 10px;text-align:center;
+}
+.result-placeholder .glyph{font-family:var(--font-serif);font-size:30px;color:var(--border-strong);line-height:1}
+.result-placeholder p{font-size:13.5px;color:var(--ink-soft);max-width:26em}
+
+/* 流水线轨迹 · 五步 */
+.pipeline{
+  display:flex;align-items:center;gap:0;flex-wrap:wrap;
+  padding:18px 22px;
+  background:var(--surface-warm);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+}
+.pipe-step{display:flex;align-items:center;gap:8px}
+.pipe-dot{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+  background:var(--panel);
+}
+.pipe-step .txt{font-size:12.5px;color:var(--ink);white-space:nowrap}
+.pipe-arrow{color:var(--gold);font-size:13px;margin:0 10px}
+
+/* ============================================================
+   11 · 区块④ · 评论区演示
+   ============================================================ */
+.comments-head{text-align:left;margin-bottom:8px}
+.comments-head h2{font-size:34px;margin-bottom:6px}
+.comments-head .sub{font-size:14px;color:var(--ink-soft)}
+.comments-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:34px}
+.comment{padding:22px 24px}
+.comment-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.avatar{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-serif);font-weight:700;font-size:15px;
+  color:var(--accent);background:var(--accent-soft);
+  border:1px solid rgba(140,47,28,.18);
+}
+.comment-user{font-size:14.5px;font-weight:600}
+.comment-meta{font-size:12px;color:var(--ink-soft);letter-spacing:.03em}
+.comment-q{font-size:14.5px;color:var(--ink);line-height:1.7;margin-bottom:12px}
+.comment-ai{
+  position:relative;
+  background:var(--surface-warm);
+  border-left:2px solid var(--success);
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  padding:12px 16px;
+}
+.comment-ai::before{
+  content:"AI 回复";position:absolute;top:-9px;left:14px;
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;
+  color:var(--success-deep);background:var(--panel);
+  padding:0 7px;
+}
+.comment-ai p{font-size:13.5px;color:var(--ink);line-height:1.75}
+
+/* ============================================================
+   12 · 页脚
+   ============================================================ */
+.footer{
+  margin-top:96px;padding:34px 0 40px;
+  border-top:1px solid var(--border);
+}
+.footer .wrap{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  font-size:13px;color:var(--ink-soft);letter-spacing:.05em;flex-wrap:wrap;
+}
+.footer .dot{color:var(--gold)}
+.footer .brand{font-family:var(--font-serif);font-weight:700;color:var(--accent)}
+
+/* ============================================================
+   13 · 响应式 · 900px 断点兜底单栏
+   ============================================================ */
+@media (max-width:900px){
+  .wrap{padding:0 22px}
+  .hero{padding:72px 0 56px}
+  .hero h1{font-size:40px}
+  .hero-sub{margin-bottom:44px}
+  .pains{grid-template-columns:1fr;gap:16px;margin-bottom:48px}
+  .roi{padding:26px 22px}
+  .case-head{flex-direction:column;align-items:flex-start}
+  .case-grid,.workbench,.comments-grid{grid-template-columns:1fr}
+  .section{padding:60px 0 0}
+  .workbench-head h2,.case-head h2,.comments-head h2{font-size:27px}
+  .hero .kicker::before,.hero .kicker::after{width:32px}
+}
+
+/* 无障碍降级 · 减少动态效果偏好时关闭全部过渡（P1） */
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     区块① · 品牌定位区 Hero
+     ============================================================ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker hero-kicker">酱香 × 数智</div>
+    <h1>白酒，正在变成一种<span class="accent-word">生活方式</span></h1>
+    <p class="hero-sub">像咖啡一样，从应酬桌走向生活桌<span class="dash">——</span>酒阵 Agent 帮酒厂把这句话，讲给年轻人听。</p>
+
+    <!-- 三缺痛点卡 -->
+    <div class="pains" role="list">
+      <article class="card pain" role="listitem">
+        <span class="pain-tag">缺品牌</span>
+        <h3>有酒没故事</h3>
+        <p>酒是好酒，讲不出<em>产区的底气</em>和匠人的门道，货架上泯然众人。</p>
+      </article>
+      <article class="card pain" role="listitem">
+        <span class="pain-tag">缺资金</span>
+        <h3>代运营太贵</h3>
+        <p>传统代运营报价 <em>3000–8000 元/月</em> 起，中小酒厂难以长期负担。</p>
+      </article>
+      <article class="card pain" role="listitem">
+        <span class="pain-tag">缺人才</span>
+        <h3>一人写不动三平台</h3>
+        <p>公众号、朋友圈、短视频脚本——<em>一个人</em>根本追不过内容节奏。</p>
+      </article>
+    </div>
+
+    <!-- ROI 对比双 bar -->
+    <section class="card roi" aria-label="成本对比">
+      <div class="roi-head">
+        <h3>同样的内容活儿，两种做法</h3>
+        <span>以月度公众号内容为例 · 演示估算</span>
+      </div>
+      <div class="roi-row">
+        <div class="roi-meta">
+          <span class="roi-label">传统代运营</span>
+          <span class="roi-value">6000 元/月</span>
+        </div>
+        <div class="roi-track"><div class="roi-bar muted" data-w="100"></div></div>
+      </div>
+      <div class="roi-row">
+        <div class="roi-meta">
+          <span class="roi-label">酒阵 Agent</span>
+          <span class="roi-value">3 分钟/篇<span class="roi-badge">成本降 95%</span></span>
+        </div>
+        <div class="roi-track"><div class="roi-bar grad" data-w="5"></div></div>
+      </div>
+    </section>
+  </div>
+</header>
+
+<main>
+<!-- ============================================================
+     区块② · 案例展示馆
+     ============================================================ -->
+<section class="section" id="cases" aria-labelledby="cases-title">
+  <div class="wrap">
+    <div class="case-head">
+      <div>
+        <h2 id="cases-title">一厂一档 · 案例展示馆</h2>
+        <p class="sub">每家酒厂一份「一厂一档」卷宗，Agent 按档案说话。</p>
+      </div>
+      <span class="stamp-badge">以下为演示案例</span>
+    </div>
+
+    <div class="case-grid">
+      <!-- 档案卡 1 · 茅台镇老烧坊 -->
+      <article class="card dossier" data-dossier>
+        <span class="seal" aria-hidden="true">档案</span>
+        <div class="dossier-top">
+          <span class="dossier-num">编号 JZ-2025-001</span>
+          <div class="dossier-info">
+            <h3>茅台镇老烧坊</h3>
+            <p class="positioning"><strong>定位</strong>｜茅台镇 388 元的实在坤沙，把产区的底气讲成人话</p>
+          </div>
+          <span class="wine-spine">窖藏十年</span>
+        </div>
+        <dl class="dossier-body">
+          <div class="dossier-field">
+            <dt>产品</dt>
+            <dd>老烧坊·窖藏10<span class="sep">·</span>388 元<span class="sep">·</span>贵州遵义·茅台镇</dd>
+          </div>
+          <div class="dossier-field">
+            <dt>生活场景</dt>
+            <dd>周末炖菜、老友上门</dd>
+          </div>
+        </dl>
+        <!-- 展开区 -->
+        <div class="dossier-more" id="more-1">
+          <div class="more-inner more-grid">
+            <div class="more-item">
+              <h4>品牌语气</h4>
+              <p>朴实、产区自豪感、有匠心但不装</p>
+            </div>
+            <div class="more-item">
+              <h4>语气红线</h4>
+              <ul>
+                <li>不得意腔</li><li>不吹年份</li><li>禁『赶快下单』类催促</li>
+              </ul>
+            </div>
+            <div class="more-item">
+              <h4>选题倾向</h4>
+              <ul><li>酿造工艺</li><li>老师傅故事</li><li>产区风物</li></ul>
+            </div>
+            <div class="more-item">
+              <h4>素材库</h4>
+              <p>酒师傅凌晨四点看酒醅，说这时候的酸香最骗不了人<br>曲仓里温度计挂了一排，但老师傅还是先用手背贴</p>
+            </div>
+          </div>
+        </div>
+        <div class="dossier-actions">
+          <button type="button" class="btn">用此档案生成 →</button>
+          <button type="button" class="btn btn-ghost" aria-expanded="false" aria-controls="more-1" data-toggle="more-1">展开完整档案 <span class="caret">▼</span></button>
+        </div>
+      </article>
+
+      <!-- 档案卡 2 · 青溪酒厂 -->
+      <article class="card dossier" data-dossier>
+        <span class="seal" aria-hidden="true">档案</span>
+        <div class="dossier-top">
+          <span class="dossier-num">编号 JZ-2025-002</span>
+          <div class="dossier-info">
+            <h3>青溪酒厂</h3>
+            <p class="positioning"><strong>定位</strong>｜168 元的小坛柔和，年轻人佐餐不用仪式感</p>
+          </div>
+          <span class="wine-spine">小坛柔和</span>
+        </div>
+        <dl class="dossier-body">
+          <div class="dossier-field">
+            <dt>产品</dt>
+            <dd>青溪·小坛<span class="sep">·</span>168 元<span class="sep">·</span>贵州遵义·习水县</dd>
+          </div>
+          <div class="dossier-field">
+            <dt>生活场景</dt>
+            <dd>烧烤摊、朋友小聚、下班小酌</dd>
+          </div>
+        </dl>
+        <!-- 展开区 -->
+        <div class="dossier-more" id="more-2">
+          <div class="more-inner more-grid">
+            <div class="more-item">
+              <h4>品牌语气</h4>
+              <p>轻松、实在、像会喝酒的朋友在聊天</p>
+            </div>
+            <div class="more-item">
+              <h4>语气红线</h4>
+              <ul>
+                <li>不摆大师腔</li><li>不讲玄学</li><li>禁『尊贵』类词汇</li>
+              </ul>
+            </div>
+            <div class="more-item">
+              <h4>选题倾向</h4>
+              <ul><li>年轻人酒桌</li><li>佐餐搭配</li><li>小聚场景</li></ul>
+            </div>
+            <div class="more-item">
+              <h4>素材库</h4>
+              <p>周五晚上，镇上烧烤摊一半的桌子上摆的是青溪小坛<br>酒厂门口就是青溪河，工人们下班顺手拎一坛回家</p>
+            </div>
+          </div>
+        </div>
+        <div class="dossier-actions">
+          <button type="button" class="btn">用此档案生成 →</button>
+          <button type="button" class="btn btn-ghost" aria-expanded="false" aria-controls="more-2" data-toggle="more-2">展开完整档案 <span class="caret">▼</span></button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     区块③ · 内容工作台
+     ============================================================ -->
+<section class="section" id="workbench" aria-labelledby="wb-title">
+  <div class="wrap">
+    <div class="workbench-head">
+      <h2 id="wb-title">内容工作台</h2>
+      <p class="sub">填四张卡，交给 Agent；语气跟着档案走，红线自动避开。</p>
+    </div>
+
+    <div class="workbench">
+      <!-- 左侧 · 四组表单卡 -->
+      <form class="card form-card" onsubmit="return false" aria-label="内容生成表单">
+        <div class="form-group">
+          <span class="serial">01<small>THE JIU</small></span>
+          <h3>这瓶酒</h3>
+          <p class="g-sub">把产品的底子交代清楚</p>
+          <div class="form-grid2">
+            <div class="field"><label for="f-pname">产品名</label><input id="f-pname" type="text" placeholder="如：老烧坊·窖藏10"></div>
+            <div class="field"><label for="f-price">价格带</label><input id="f-price" type="text" placeholder="如：300–400 元"></div>
+            <div class="field"><label for="f-sell">核心卖点</label><input id="f-sell" type="text" placeholder="如：实在坤沙，产区直供"></div>
+            <div class="field"><label for="f-factory">酒厂名</label><input id="f-factory" type="text" placeholder="如：茅台镇老烧坊"></div>
+          </div>
+          <div class="field" style="margin-top:12px"><label for="f-region">产区</label><input id="f-region" type="text" placeholder="如：贵州遵义·茅台镇"></div>
+        </div>
+
+        <div class="form-group">
+          <span class="serial">02<small>FOR WHOM</small></span>
+          <h3>卖给谁</h3>
+          <p class="g-sub">想清楚坐到生活桌上的那群人</p>
+          <div class="field" style="margin-bottom:12px"><label for="f-crowd">目标人群</label><input id="f-crowd" type="text" placeholder="如：30 岁上下、开始讲究喝什么的年轻人"></div>
+          <div class="field"><label for="f-scene">典型消费场景</label><input id="f-scene" type="text" placeholder="如：周末炖菜、老友上门"></div>
+        </div>
+
+        <div class="form-group">
+          <span class="serial">03<small>THE TONE</small></span>
+          <h3>怎么说话</h3>
+          <p class="g-sub">语气是品牌的声音，红线是品牌的底线</p>
+          <div class="field" style="margin-bottom:12px"><label for="f-tone">品牌语气</label><input id="f-tone" type="text" placeholder="如：朴实、有产区自豪感、不装"></div>
+          <div class="field"><label for="f-redline">语气红线</label><input id="f-redline" type="text" placeholder="如：不得意腔、不吹年份、禁催促话术"></div>
+        </div>
+
+        <div class="form-group">
+          <span class="serial">04<small>MATERIALS</small></span>
+          <h3>素材库</h3>
+          <p class="g-sub">只有你家才有的真细节</p>
+          <div class="field"><label for="f-story">酒厂故事</label><textarea id="f-story" placeholder="如：酒师傅凌晨四点看酒醅，说这时候的酸香最骗不了人……"></textarea></div>
+        </div>
+
+        <button type="submit" class="btn btn-block gen-btn"><span class="spark">✦</span> 生成内容三件套</button>
+      </form>
+
+      <!-- 右侧 · 结果面板 -->
+      <div class="card result-card">
+        <div class="result-head">
+          <div class="tabs" role="tablist" aria-label="内容三件套">
+            <button class="tab" role="tab" aria-selected="true" data-tab="gzh">公众号</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="pyq">朋友圈</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="video">短视频</button>
+          </div>
+        </div>
+        <div class="result-body">
+          <!-- 公众号 -->
+          <div class="tab-panel" id="panel-gzh" role="tabpanel">
+            <article class="article">
+              <h4>示例文案 · 老烧坊·窖藏10</h4>
+              <h5>凌晨四点的茅台镇，酸香最骗不了人</h5>
+              <p class="lede">在茅台镇，判断一锅酒好不好，仪器说了不算，老师傅的手背说了算。</p>
+              <p>曲仓里温度计挂了一排，可烧坊的师傅进屋第一件事，还是先用手背往酒醅上贴一贴——温度之外，还有一股正在起来的酸香。他说，这时候的味道最骗不了人。</p>
+              <p>这批窖藏十年的坤沙，不出酒厂就能闻到那种踏实的酱香。周末炖一锅牛腩，开一瓶，酒香混着肉香，比任何排场都实在。</p>
+            </article>
+          </div>
+          <!-- 朋友圈 -->
+          <div class="tab-panel" id="panel-pyq" role="tabpanel" hidden>
+            <div class="result-placeholder">
+              <span class="glyph">瓶</span>
+              <p>此处将生成朋友圈短文案：一两句场景开场 + 一句人话卖点，适配九宫格配图节奏。</p>
+            </div>
+          </div>
+          <!-- 短视频 -->
+          <div class="tab-panel" id="panel-video" role="tabpanel" hidden>
+            <div class="result-placeholder">
+              <span class="glyph">影</span>
+              <p>此处将生成短视频脚本：15–30 秒分镜 + 口播文案，从「凌晨四点的曲仓」讲起。</p>
+            </div>
+          </div>
+
+          <!-- 流水线轨迹 -->
+          <div class="pipeline" aria-label="生成流水线">
+            <span class="pipe-step"><span class="pipe-dot">1</span><span class="txt">解析</span></span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step"><span class="pipe-dot">2</span><span class="txt">卖点提取</span></span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step"><span class="pipe-dot">3</span><span class="txt">生活方式装配</span></span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step"><span class="pipe-dot">4</span><span class="txt">三通道生成</span></span>
+            <span class="pipe-arrow">→</span>
+            <span class="pipe-step"><span class="pipe-dot">5</span><span class="txt">红线自查</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     区块④ · 评论区演示
+     ============================================================ -->
+<section class="section" id="comments" aria-labelledby="cm-title">
+  <div class="wrap">
+    <div class="comments-head">
+      <h2 id="cm-title">评论区，也是内容的一部分</h2>
+      <p class="sub">AI 用同一种语气接住每一条提问——以下为演示对话。</p>
+    </div>
+
+    <div class="comments-grid">
+      <article class="card comment">
+        <div class="comment-top">
+          <span class="avatar">客</span>
+          <div>
+            <div class="comment-user">酱香观察员</div>
+            <div class="comment-meta">公众号留言 · 2 小时前</div>
+          </div>
+        </div>
+        <p class="comment-q">这酒多少钱一瓶？哪里能买到？</p>
+        <div class="comment-ai">
+          <p>老烧坊·窖藏10 是 388 元，产区直发。您平时一个人喝还是家里聚餐喝？我可以帮您参考下入手几瓶合适。</p>
+        </div>
+      </article>
+
+      <article class="card comment">
+        <div class="comment-top">
+          <span class="avatar">真</span>
+          <div>
+            <div class="comment-user">只喝纯粮的赵哥</div>
+            <div class="comment-meta">视频号评论 · 昨天</div>
+          </div>
+        </div>
+        <p class="comment-q">茅台镇 388 的坤沙，是真的坤沙工艺吗？别是串的吧？</p>
+        <div class="comment-ai">
+          <p>您这个问题该问。我们是茅台镇本地烧坊，坤沙工艺全年只出一个批次，欢迎到产区来看——凌晨四点的酒醅，比广告有说服力。</p>
+        </div>
+      </article>
+
+      <article class="card comment">
+        <div class="comment-top">
+          <span class="avatar">链</span>
+          <div>
+            <div class="comment-user">Momo</div>
+            <div class="comment-meta">小红书评论 · 3 小时前</div>
+          </div>
+        </div>
+        <p class="comment-q">蹲一个链接！想先买一瓶试试</p>
+        <div class="comment-ai">
+          <p>已为您留了单瓶体验装，点主页「产区直供」就能进店。第一次喝建议配顿家常菜，它本来就是为饭桌酿的。</p>
+        </div>
+      </article>
+
+      <article class="card comment">
+        <div class="comment-top">
+          <span class="avatar">礼</span>
+          <div>
+            <div class="comment-user">给老爸挑酒的小林</div>
+            <div class="comment-meta">公众号留言 · 今天 09:40</div>
+          </div>
+        </div>
+        <p class="comment-q">想给长辈送礼，这款拿得出手吗？</p>
+        <div class="comment-ai">
+          <p>送长辈看的是喝着舒坦、来源清楚。这款窖藏十年、茅台镇直发，附产区溯源卡——心意在酒里，不在包装的喧闹里。</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============================================================
+     页脚
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap">
+    <span class="brand">酒阵 Agent</span>
+    <span class="dot">·</span>
+    <span>贵客松 2026 赛道二（AI×白酒）</span>
+    <span class="dot">·</span>
+    <span>48h 演示版</span>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   交互 1 · 档案卡展开 / 收起
+   ============================================================ */
+document.querySelectorAll('[data-toggle]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var panel = document.getElementById(btn.getAttribute('data-toggle'));
+    var open = panel.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.childNodes[0].nodeValue = open ? '收起完整档案 ' : '展开完整档案 ';
+  });
+});
+
+/* ============================================================
+   交互 2 · ROI bar 页面载入后宽度动画（width:0 → 目标值）
+   ============================================================ */
+window.addEventListener('load', function(){
+  var bars = document.querySelectorAll('.roi-bar');
+  setTimeout(function(){
+    bars.forEach(function(bar, i){
+      setTimeout(function(){
+        bar.style.width = bar.getAttribute('data-w') + '%';
+      }, i * 150); /* 两条错峰进场，节奏更自然 */
+    });
+  }, 250);
+});
+
+/* ============================================================
+   交互 3 · 结果 tabs 切换（公众号示例文案 / 其余占位）
+   ============================================================ */
+document.querySelectorAll('.tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(t){
+      t.setAttribute('aria-selected', 'false');
+    });
+    tab.setAttribute('aria-selected', 'true');
+    document.querySelectorAll('.tab-panel').forEach(function(p){
+      p.hidden = (p.id !== 'panel-' + tab.getAttribute('data-tab'));
+    });
+  });
+});
+
+/* ============================================================
+   交互 4/5 · 按钮 hover（纯 CSS）；输入框可输入（原生表单）
+   ============================================================ */
+</script>
+</body>
+</html>

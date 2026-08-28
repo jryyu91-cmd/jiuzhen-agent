@@ -7,23 +7,25 @@ interface ShowcaseGalleryProps {
   loading: boolean
 }
 
-// 区块② 案例展示馆：明确标注「以下为演示案例」（用户硬性要求）
+// 区块② 案例展示馆：明确标注「以下为演示案例」（骑缝章徽标）
 export default function ShowcaseGallery({ profiles, onUseProfile, loading }: ShowcaseGalleryProps) {
   if (profiles.length === 0) return null
 
   return (
-    <section className="section" id="showcase">
-      <header className="section-head">
-        <h2>🏛️ 一厂一档 · 案例展示馆</h2>
-        <span className="badge-demo">以下为演示案例</span>
-        <p className="section-sub">
-          每家酒厂一份品牌档案（语气红线 / 选题倾向 / 场景素材库）。同一个流水线，不同档案产出完全不同的内容——这就是「一厂一档」的个性化定制机制。
-        </p>
-      </header>
-      <div className="showcase-grid">
-        {profiles.map((p) => (
-          <ShowcaseCard key={p.profile_id} profile={p} onUse={() => onUseProfile(p)} loading={loading} />
-        ))}
+    <section className="section" id="cases">
+      <div className="wrap">
+        <div className="case-head">
+          <div>
+            <h2>一厂一档 · 案例展示馆</h2>
+            <p className="sub">每家酒厂一份「一厂一档」卷宗，Agent 按档案说话。</p>
+          </div>
+          <span className="stamp-badge">以下为演示案例</span>
+        </div>
+        <div className="case-grid">
+          {profiles.map((p, i) => (
+            <ShowcaseCard key={p.profile_id} profile={p} index={i} onUse={() => onUseProfile(p)} loading={loading} />
+          ))}
+        </div>
       </div>
     </section>
   )
