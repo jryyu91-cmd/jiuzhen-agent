@@ -52,8 +52,18 @@ export default function GeneratorForm({ value, onChange, onGenerate, loading, er
 
   const canNext = value.product_name.trim().length > 0
 
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!canNext) return
+    if (step < 2) {
+      setStep(step + 1)
+      return
+    }
+    onGenerate()
+  }
+
   return (
-    <form className="card form-card" onSubmit={(e) => { e.preventDefault(); if (step === 2) onGenerate() }}>
+    <form className="card form-card" onSubmit={submit}>
       <div className="form-card-head">
         <div>
           <span className="mini-label">NEW MARKETING TASK</span>
@@ -185,7 +195,7 @@ export default function GeneratorForm({ value, onChange, onGenerate, loading, er
       <div className="step-actions">
         {step > 0 ? <button type="button" className="btn btn-secondary" onClick={() => setStep(step - 1)}>← 上一步</button> : <span />}
         {step < 2 ? (
-          <button type="button" className="btn btn-primary" disabled={!canNext} onClick={() => setStep(step + 1)}>下一步 <span>→</span></button>
+          <button type="submit" className="btn btn-primary" disabled={!canNext}>下一步 <span>→</span></button>
         ) : (
           <button type="submit" className="btn btn-primary run-agent" disabled={loading || !canNext}>
             <span className="spark">✦</span>{loading ? '酿见正在分析…' : '让酿见开始分析'}
