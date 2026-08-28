@@ -3,100 +3,105 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 
-class BrandProfile(BaseModel):
-    """一厂一档 · 品牌档案（个性化定制的核心机制）
+class FactEvidence(BaseModel):
+    """品牌事实证据：只有确认过的事实才允许进入营销内容。"""
+    label: str = Field(..., description="事实名称，如 工艺/产区/溯源/物流")
+    value: str = Field(..., description="已确认事实")
+    source: str = Field(default="企业提供", description="证据来源或资料名称")
 
-    灵感来源：烽火AI矩阵号「一客一工作区」+ 领航知识库「先装配上下文再创作」。
-    酒厂信息不是每次临时填表，而是预先建档：模型给每家酒厂学出一套
-    「选题倾向 + 语气红线 + 场景素材库」，生成时装配进流水线。
-    """
-    profile_id: str = Field(..., description="档案唯一标识，如 laoshaofang")
-    distillery_name: str = Field(..., description="酒厂名称")
-    positioning: str = Field(
-        default="",
-        description="一句话定位，案例馆档案卡正面展示，如「茅台镇 388 元的实在坤沙」",
-    )
-    lifestyle_scene: str = Field(
-        default="",
-        description="生活方式场景标签，如 下班小酌/朋友佐餐/周末炖菜",
-    )
-    location: str = Field(default="贵州遵义", description="产区位置")
-    product_name: str = Field(..., description="主推产品名")
-    price_range: str = Field(default="300-500元", description="价格带")
-    target_audience: str = Field(
-        default="30-45岁男性、商务送礼与自饮兼顾",
-        description="目标人群"
-    )
-    selling_points: list[str] = Field(default_factory=list, description="卖点关键词")
-    brand_tone: str = Field(default="朴实、产区自豪感、有匠心但不装", description="品牌语气")
-    tone_taboos: list[str] = Field(
-        default_factory=list,
-        description="语气红线，如 不得意腔 / 不用『赶快』 / 不吹年份",
-    )
-    topic_preferences: list[str] = Field(
-        default_factory=list,
-        description="选题倾向，如 酿造工艺/老师傅故事/产区风物/酒桌礼仪",
-    )
-    scene_materials: list[str] = Field(
-        default_factory=list,
-        description="场景素材库：酒厂真实细节，如 凌晨四点看酒醅/曲砖前四十天",
-    )
-    extra_material: Optional[str] = Field(default=None, description="自由素材文本")
+
+class BrandProfile(BaseModel):
+    """一厂一档 · 品牌档案。"""
+    profile_id: str
+    distillery_name: str
+    positioning: str = ""
+    lifestyle_scene: str = ""
+    location: str = "贵州遵义"
+    product_name: str
+    price_range: str = "300-500元"
+    target_audience: str = "成年白酒消费者"
+    selling_points: list[str] = Field(default_factory=list)
+    brand_tone: str = "朴实、可信、有生活感"
+    tone_taboos: list[str] = Field(default_factory=list)
+    topic_preferences: list[str] = Field(default_factory=list)
+    scene_materials: list[str] = Field(default_factory=list)
+    fact_evidence: list[FactEvidence] = Field(default_factory=list)
+    extra_material: Optional[str] = None
 
 
 class DistilleryInfo(BaseModel):
-    """酒厂输入信息（兼容快速演示：无需建档直接生成）"""
-    name: str = Field(..., description="酒厂名称", examples=["茅台镇某某烧坊"])
-    location: str = Field(default="贵州遵义", description="产区位置")
-    product_name: str = Field(..., description="主推产品名", examples=["某某·窖藏10"])
-    price_range: str = Field(default="300-500元", description="价格带")
-    target_audience: str = Field(
-        default="30-45岁男性、商务送礼与自饮兼顾",
-        description="目标人群"
-    )
-    selling_points: list[str] = Field(
-        default_factory=list,
-        description="卖点关键词，如 大曲坤沙、老酒勾调、赤水河谷"
-    )
-    consume_scene: Optional[str] = Field(
-        default=None,
-        description="典型消费场景，如 下班到家小酌、周末炖菜、烧烤摊朋友小聚",
-    )
-    brand_tone: str = Field(
-        default="朴实、产区自豪感、有匠心但不装",
-        description="品牌语气"
-    )
-    tone_taboos: list[str] = Field(
-        default_factory=list,
-        description="语气红线（选填），如 不摆大师腔、不吹年份；填了会在文末展示红线自查",
-    )
-    extra_material: Optional[str] = Field(
-        default=None,
-        description="产区文化素材/酒厂故事（自由文本）"
-    )
+    """酒厂输入信息。不会营销的用户也可只填产品底层信息，由 Agent 反推人群和场景。"""
+    name: str
+    location: str = "贵州遵义"
+    product_name: str
+    price_range: str = "300-500元"
+    target_audience: str = ""
+    selling_points: list[str] = Field(default_factory=list)
+    consume_scene: Optional[str] = None
+    marketing_goal: str = Field(default="消费者动销", description="消费者动销/品牌认知/新品种草/私域转化")
+    existing_channels: list[str] = Field(default_factory=list, description="现有渠道，如 朋友圈/视频号/抖音/线下门店")
+    brand_tone: str = "朴实、可信、有生活感"
+    tone_taboos: list[str] = Field(default_factory=list)
+    fact_evidence: list[FactEvidence] = Field(default_factory=list)
+    extra_material: Optional[str] = None
+
+
+class AudienceSegment(BaseModel):
+    name: str
+    need: str
+    trigger: str
+    recommended_scene: str
+    priority: str
+
+
+class SceneOpportunity(BaseModel):
+    scene: str
+    why_fit: str
+    content_angle: str
+    conversion_action: str
+
+
+class MarketingDiagnosis(BaseModel):
+    core_problem: str
+    strategy: str
+    audience_segments: list[AudienceSegment] = Field(default_factory=list)
+    scene_opportunities: list[SceneOpportunity] = Field(default_factory=list)
+    channel_plan: list[str] = Field(default_factory=list)
+    next_action: str
+
+
+class ComplianceIssue(BaseModel):
+    level: str
+    rule: str
+    excerpt: str
+    suggestion: str
+
+
+class ComplianceReport(BaseModel):
+    passed: bool
+    issues: list[ComplianceIssue] = Field(default_factory=list)
+    fact_gaps: list[str] = Field(default_factory=list)
 
 
 class GeneratedContent(BaseModel):
-    """单条生成内容"""
-    channel: str          # wechat / moments / video
+    channel: str
     title: Optional[str] = None
     body: str
     hashtags: list[str] = Field(default_factory=list)
 
 
 class GenerateResponse(BaseModel):
-    """三件套 + 元信息"""
     distillery: str
+    diagnosis: MarketingDiagnosis
     contents: list[GeneratedContent]
-    pipeline_trace: list[str] = Field(
-        default_factory=list, description="流水线步骤轨迹，便于现场演示讲解"
-    )
+    compliance: ComplianceReport
+    pipeline_trace: list[str] = Field(default_factory=list)
 
 
 class CommentReply(BaseModel):
     comment: str
     reply: str
-    intent: str  # 咨询价格 / 质疑真假 / 要链接 / 闲聊
+    intent: str
 
 
 class CommentResponse(BaseModel):
