@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models import DistilleryInfo, GenerateResponse, CommentResponse
+from .models import DistilleryInfo, GenerateResponse, CommentResponse, BrandProfile
 from .pipeline import run_pipeline
 from .comments import gen_comment_replies
 from .profiles import get_profile, list_profiles, profile_to_info
@@ -22,9 +22,9 @@ def health() -> dict:
     return {"status": "ok", "service": "jiuzhen-agent"}
 
 
-@app.get("/api/profiles")
-def profiles() -> list[dict]:
-    """一厂一档：已有品牌档案列表"""
+@app.get("/api/profiles", response_model=list[BrandProfile])
+def profiles() -> list[BrandProfile]:
+    """一厂一档：返回完整品牌档案（案例馆卡片展示 + 表单回填用）"""
     return list_profiles()
 
 

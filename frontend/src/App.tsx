@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { generate, generateByProfile, fetchCommentReplies, listProfiles } from './api'
-import type { DistilleryInfo, GenerateResponse, CommentResponse, ProfileSummary } from './api'
-
-const CHANNEL_LABEL: Record<string, string> = {
-  wechat: '📝 公众号文案',
-  moments: '💬 朋友圈短文案',
-  video: '🎬 短视频脚本',
-}
+import type { DistilleryInfo, GenerateResponse, CommentResponse, ProfileFull } from './types'
+import BrandHero from './components/BrandHero'
+import ShowcaseGallery from './components/ShowcaseGallery'
+import Workbench from './components/Workbench'
+import CommentsDemo from './components/CommentsDemo'
 
 const DEFAULT_FORM: DistilleryInfo = {
   name: '茅台镇老烧坊',
@@ -15,48 +13,37 @@ const DEFAULT_FORM: DistilleryInfo = {
   price_range: '388元',
   target_audience: '30-45岁男性、商务送礼与自饮兼顾',
   selling_points: ['大曲坤沙', '老酒勾调', '赤水河谷产区'],
+  consume_scene: '',
   brand_tone: '朴实、产区自豪感、有匠心但不装',
+  tone_taboos: [],
   extra_material: '',
 }
 
 export default function App() {
   const [form, setForm] = useState<DistilleryInfo>(DEFAULT_FORM)
-  const [profiles, setProfiles] = useState<ProfileSummary[]>([])
+  const [profiles, setProfiles] = useState<ProfileFull[]>([])
   const [result, setResult] = useState<GenerateResponse | null>(null)
   const [comments, setComments] = useState<CommentResponse | null>(null)
-  const [activeTab, setActiveTab] = useState<string>('wechat')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const resultRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     listProfiles().then(setProfiles).catch(() => setProfiles([]))
   }, [])
 
-  const handleProfileGenerate = async (profileId: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await generateByProfile(profileId)
-      setResult(res)
-      const item = res.contents.find((c) => c.channel === 'wechat')
-      const c = await fetchCommentReplies({
-        product: form.product_name,
-        name: form.name,
-        location: form.location,
-        price: form.price_range,
-      })
-      setComments(c)
-      setActiveTab(res.contents[0]?.channel ?? 'wechat')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '未知错误')
-    } finally {
-      setLoading(false)
-    }
+  const pullComments = async (f: DistilleryInfo) => {
+    const c = await fetchCommentReplies({
+      product: f.product_name,
+      name: f.name,
+      location: f.location,
+      price: f.price_range,
+    })
+    setComments(c)
   }
 
-  const set = (key: keyof DistilleryInfo) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => setForm({ ...form, [key]: e.target.value })
+  const scrollToResult = () =>
+    resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -64,14 +51,8 @@ export default function App() {
     try {
       const res = await generate(form)
       setResult(res)
-      const c = await fetchCommentReplies({
-        product: form.product_name,
-        name: form.name,
-        location: form.location,
-        price: form.price_range,
-      })
-      setComments(c)
-      setActiveTab(res.contents[0]?.channel ?? 'wechat')
+      await pullComments(form)
+      scrollToResult()
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误')
     } finally {
@@ -79,91 +60,60 @@ export default function App() {
     }
   }
 
-  const active = result?.contents.find((c) => c.channel === activeTab)
+  // 案例馆「用此档案生成」：生成 → 档案回填表单（装配可视化）→ 滚到结果
+  const handleUseProfile = async (p: ProfileFull) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await generateByProfile(p.profile_id)
+      const filled: DistilleryInfo = {
+        name: p.distillery_name,
+        location: p.location,
+        product_name: p.product_name,
+        price_range: p.price_range,
+        target_audience: p.target_audience,
+        selling_points: [...p.selling_points],
+        consume_scene: p.lifestyle_scene,
+        brand_tone: p.brand_tone,
+        tone_taboos: [...p.tone_taboos],
+        extra_material: p.scene_materials.join('；'),
+      }
+      setForm(filled)
+      setResult(res)
+      await pullComments(filled)
+      scrollToResult()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '未知错误')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="layout">
-      <header className="header">
-        <h1>🍶 酒阵 Agent</h1>
-        <p>酱酒厂市场部一个人的内容工厂 —— 输入酒厂信息，产出公众号 / 朋友圈 / 短视频三件套</p>
-      </header>
-
-      {profiles.length > 0 && (
-        <section className="profile-bar">
-          <span className="profile-label">一厂一档 · 快速生成：</span>
-          {profiles.map((p) => (
-            <button key={p.profile_id} className="profile-btn" disabled={loading}
-              onClick={() => handleProfileGenerate(p.profile_id)}>
-              {p.distillery_name}（{p.product_name} · {p.price_range}）
-            </button>
-          ))}
+    <div className="page">
+      <BrandHero />
+      <main className="layout">
+        <ShowcaseGallery profiles={profiles} onUseProfile={handleUseProfile} loading={loading} />
+        <section className="section" id="workbench">
+          <header className="section-head">
+            <h2>🛠️ 自由生成</h2>
+            <p className="section-sub">没有档案也能用：手动填酒厂信息，流水线一样跑。</p>
+          </header>
+          <Workbench
+            ref={resultRef}
+            form={form}
+            onFormChange={setForm}
+            result={result}
+            onGenerate={handleGenerate}
+            loading={loading}
+            error={error}
+          />
         </section>
-      )}
-
-      <div className="columns">
-        <section className="panel">
-          <h2>酒厂信息</h2>
-          <label>酒厂名称<input value={form.name} onChange={set('name')} /></label>
-          <label>产区位置<input value={form.location} onChange={set('location')} /></label>
-          <label>主推产品名<input value={form.product_name} onChange={set('product_name')} /></label>
-          <label>价格带<input value={form.price_range} onChange={set('price_range')} /></label>
-          <label>目标人群<input value={form.target_audience} onChange={set('target_audience')} /></label>
-          <label>卖点（顿号分隔）<input value={form.selling_points.join('、')} onChange={(e) => setForm({ ...form, selling_points: e.target.value.split(/[、,，]/).map((s) => s.trim()).filter(Boolean) })} /></label>
-          <label>品牌语气<input value={form.brand_tone} onChange={set('brand_tone')} /></label>
-          <label>产区素材 / 酒厂故事（可选）<textarea rows={3} value={form.extra_material ?? ''} onChange={set('extra_material')} /></label>
-          <button className="primary" onClick={handleGenerate} disabled={loading}>
-            {loading ? '生成中…' : '生成内容三件套'}
-          </button>
-          {error && <p className="error">{error}</p>}
-        </section>
-
-        <section className="panel output">
-          {result ? (
-            <>
-              <nav className="tabs">
-                {result.contents.map((c) => (
-                  <button
-                    key={c.channel}
-                    className={activeTab === c.channel ? 'tab active' : 'tab'}
-                    onClick={() => setActiveTab(c.channel)}
-                  >
-                    {CHANNEL_LABEL[c.channel]}
-                  </button>
-                ))}
-              </nav>
-              {active && (
-                <article className="content">
-                  {active.title && <h3>{active.title}</h3>}
-                  <pre>{active.body}</pre>
-                  <div className="tags">
-                    {active.hashtags.map((t) => <span key={t}>#{t}</span>)}
-                  </div>
-                </article>
-              )}
-              <details className="trace">
-                <summary>流水线轨迹（现场演示用）</summary>
-                <ol>{result.pipeline_trace.map((t) => <li key={t}>{t}</li>)}</ol>
-              </details>
-              {comments && (
-                <div className="comments">
-                  <h3>评论区互动建议</h3>
-                  {comments.items.map((it) => (
-                    <div className="comment" key={it.comment}>
-                      <p className="q">👤 {it.comment} <em>{it.intent}</em></p>
-                      <p className="a">🤖 {it.reply}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="placeholder">
-              <p>左侧填好酒厂信息，点击「生成内容三件套」。</p>
-              <p>一条主链路：解析 → 卖点提取 → 三通道并行生成 → 品牌语气校验。</p>
-            </div>
-          )}
-        </section>
-      </div>
+        <CommentsDemo comments={comments} loading={loading} />
+      </main>
+      <footer className="page-footer">
+        酒阵 Agent · 贵客松 2026 赛道二（AI×白酒）· 48h 演示版：模板+规则引擎驱动，离线可跑；LLM 接入开关已预留
+      </footer>
     </div>
   )
 }

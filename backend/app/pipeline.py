@@ -63,10 +63,40 @@ def _scene_anchor(info: DistilleryInfo) -> str:
 
 
 def _pick_scene(info: DistilleryInfo, index: int = 0) -> dict:
-    """按人群粗选生活场景：年轻人群靠后取（更轻），默认第一个。"""
-    young = any(k in info.target_audience for k in ("25", "年轻", "2"))
-    scene = LIFE_SCENES[(3 if young else 0) + index % 1]
-    return scene
+    """选生活场景：优先按用户填的消费场景关键词匹配，无则按人群推断。
+
+    （修复：原实现 index % 1 恒为 0，场景轮换失效，只有 0/3 两个场景会被选中）
+    """
+    # 1) 用户填的典型消费场景优先：关键词 → 场景库映射
+    scene_text = info.consume_scene or ""
+    keyword_map = [
+        (("炖菜", "炖肉"), 1),          # 周末炖菜
+        (("烧烤", "聚会", "小聚", "朋友"), 2),  # 老友上门小聚
+        (("阳台", "独酌", "一人"), 3),  # 阳台夜风
+    ]
+    for keywords, idx in keyword_map:
+        if any(k in scene_text for k in keywords):
+            return LIFE_SCENES[idx]
+    # 2) 无场景词时按人群推断：年轻人群取更轻的场景（烧烤摊），默认下班到家
+    young = any(k in info.target_audience for k in ("25", "年轻"))
+    return LIFE_SCENES[(3 if young else 0) + index % len(LIFE_SCENES)]
+
+
+def _tone_opener(info: DistilleryInfo) -> str:
+    """消费 brand_tone：按品牌语气第一个词生成开场定调句（档案差异的第一眼）。"""
+    tone = info.brand_tone.split("、")[0] if info.brand_tone else "实在"
+    tone_map = {
+        "轻松": "咱随便聊聊，不整虚的——",
+        "朴实": "这几句话，说得实在——",
+    }
+    return tone_map.get(tone, f"按我们一贯的调子，{tone}地说——")
+
+
+def _taboo_note(info: DistilleryInfo) -> str:
+    """消费 tone_taboos：文末红线自查声明（建档酒厂独有，衬托「一厂一档」价值）。"""
+    if info.tone_taboos:
+        return f"\n> 编辑按（品牌红线自查）：{'；'.join(info.tone_taboos)}——这些坑，这篇一个没踩。\n"
+    return ""
 
 
 def gen_wechat(info: DistilleryInfo) -> GeneratedContent:
@@ -74,6 +104,8 @@ def gen_wechat(info: DistilleryInfo) -> GeneratedContent:
     sp = _selling_points_text(info)
     anchor = _scene_anchor(info)
     scene = _pick_scene(info)
+    opener = _tone_opener(info)
+    taboo = _taboo_note(info)
     title = f"成年人的酒，是留给自己的那半小时"
     body = f"""{scene['moment']}。
 
@@ -81,14 +113,14 @@ def gen_wechat(info: DistilleryInfo) -> GeneratedContent:
 
 {scene['payoff']}。
 
-喝酒这件事，说到底喝的不是酒精，是这段时间归你。应酬桌上那叫任务，自己倒的这杯才叫生活——这也是我们想认真说说{info.product_name}的原因。
+{opener}喝酒这件事，说到底喝的不是酒精，是这段时间归你。应酬桌上那叫任务，自己倒的这杯才叫生活——这也是我们想认真说说{info.product_name}的原因。
 
 它是{info.name}的酒，{info.location}产的。{sp}——这些是底气，但今天不用多讲，讲多了像上课。你只需要知道：{anchor}。这瓶酒在你拧开瓶盖之前，已经被人这么盯了一个周期。
 
 {info.price_range}。不贵，也不用搓着手等什么特殊日子。炖肉的时候开一瓶，老朋友来了开一瓶，或者就只是今晚风不错。
 
 酒是酿出来等人喝的，不是供着看的。今晚那半小时，归你。
-
+{taboo}
 > 下一篇去看看制曲车间——一块曲砖的前四十天，比你想的热闹。
 """
     return GeneratedContent(
@@ -153,13 +185,16 @@ def gen_video_script(info: DistilleryInfo) -> GeneratedContent:
 
 def run_pipeline(info: DistilleryInfo) -> tuple[list[GeneratedContent], list[str]]:
     anchor_src = "酒厂故事素材" if info.extra_material else "产区常识兜底"
+    scene_src = f"消费场景「{info.consume_scene}」" if info.consume_scene else "目标人群推断"
     trace = [
         f"① 解析输入：{info.name} / {info.product_name} / 价格带 {info.price_range}",
         f"② 提取卖点 + 场景细节锚点（{anchor_src}）",
-        "③ 生活方式叙事装配：工艺做背书（1/3），生活场景做主角（2/3）",
+        f"③ 生活方式叙事装配：场景选取依据={scene_src}；工艺做背书（1/3），生活场景做主角（2/3）",
         "④ 并行生成三通道内容：公众号 → 朋友圈 → 短视频脚本",
         "⑤ 人味终审：具体度锚点 / 段间钩子 / 收尾禁总结（粥左罗共创方法论）",
     ]
+    if info.tone_taboos:
+        trace.append(f"⑤+ 品牌红线自查：{('、'.join(info.tone_taboos))} 已生效")
     if not USE_LLM:
         trace.append("⑥ 当前为模板模式（USE_LLM=0），接入 LLM 后本步骤替换为模型生成")
     contents = [gen_wechat(info), gen_moments(info), gen_video_script(info)]

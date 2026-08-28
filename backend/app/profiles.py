@@ -13,6 +13,8 @@ _DEMO_PROFILES: dict[str, BrandProfile] = {
     "laoshaofang": BrandProfile(
         profile_id="laoshaofang",
         distillery_name="茅台镇老烧坊",
+        positioning="茅台镇 388 元的实在坤沙，把产区的底气讲成人话",
+        lifestyle_scene="周末炖菜、老友上门",
         location="贵州遵义·茅台镇",
         product_name="老烧坊·窖藏10",
         price_range="388元",
@@ -29,6 +31,8 @@ _DEMO_PROFILES: dict[str, BrandProfile] = {
     "qingxi": BrandProfile(
         profile_id="qingxi",
         distillery_name="青溪酒厂",
+        positioning="168 元的小坛柔和，年轻人佐餐不用仪式感",
+        lifestyle_scene="烧烤摊、朋友小聚、下班小酌",
         location="贵州遵义·习水县",
         product_name="青溪·小坛",
         price_range="168元",
@@ -49,12 +53,9 @@ def get_profile(profile_id: str) -> BrandProfile | None:
     return _DEMO_PROFILES.get(profile_id)
 
 
-def list_profiles() -> list[dict]:
-    return [
-        {"profile_id": p.profile_id, "distillery_name": p.distillery_name,
-         "product_name": p.product_name, "price_range": p.price_range}
-        for p in _DEMO_PROFILES.values()
-    ]
+def list_profiles() -> list[BrandProfile]:
+    """返回完整档案（案例馆档案卡需要全部字段做展开展示与表单回填）。"""
+    return list(_DEMO_PROFILES.values())
 
 
 def profile_to_info(p: BrandProfile):
@@ -67,6 +68,8 @@ def profile_to_info(p: BrandProfile):
         price_range=p.price_range,
         target_audience=p.target_audience,
         selling_points=p.selling_points,
+        consume_scene=p.lifestyle_scene or None,
         brand_tone=p.brand_tone,
+        tone_taboos=list(p.tone_taboos),
         extra_material="；".join(p.scene_materials) if p.scene_materials else None,
     )

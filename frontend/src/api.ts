@@ -1,47 +1,14 @@
-export interface DistilleryInfo {
-  name: string
-  location: string
-  product_name: string
-  price_range: string
-  target_audience: string
-  selling_points: string[]
-  brand_tone: string
-  extra_material?: string
-}
-
-export interface GeneratedContent {
-  channel: 'wechat' | 'moments' | 'video'
-  title: string | null
-  body: string
-  hashtags: string[]
-}
-
-export interface GenerateResponse {
-  distillery: string
-  contents: GeneratedContent[]
-  pipeline_trace: string[]
-}
-
-export interface CommentReply {
-  comment: string
-  reply: string
-  intent: string
-}
-
-export interface CommentResponse {
-  items: CommentReply[]
-}
+// 酒阵 Agent · API 客户端（类型定义见 types.ts）
+import type {
+  DistilleryInfo,
+  GenerateResponse,
+  CommentResponse,
+  ProfileFull,
+} from './types'
 
 const API = '/api'
 
-export interface ProfileSummary {
-  profile_id: string
-  distillery_name: string
-  product_name: string
-  price_range: string
-}
-
-export async function listProfiles(): Promise<ProfileSummary[]> {
+export async function listProfiles(): Promise<ProfileFull[]> {
   const res = await fetch(`${API}/profiles`)
   if (!res.ok) throw new Error(`获取档案失败：${res.status}`)
   return res.json()

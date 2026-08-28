@@ -12,6 +12,14 @@ class BrandProfile(BaseModel):
     """
     profile_id: str = Field(..., description="档案唯一标识，如 laoshaofang")
     distillery_name: str = Field(..., description="酒厂名称")
+    positioning: str = Field(
+        default="",
+        description="一句话定位，案例馆档案卡正面展示，如「茅台镇 388 元的实在坤沙」",
+    )
+    lifestyle_scene: str = Field(
+        default="",
+        description="生活方式场景标签，如 下班小酌/朋友佐餐/周末炖菜",
+    )
     location: str = Field(default="贵州遵义", description="产区位置")
     product_name: str = Field(..., description="主推产品名")
     price_range: str = Field(default="300-500元", description="价格带")
@@ -50,9 +58,17 @@ class DistilleryInfo(BaseModel):
         default_factory=list,
         description="卖点关键词，如 大曲坤沙、老酒勾调、赤水河谷"
     )
+    consume_scene: Optional[str] = Field(
+        default=None,
+        description="典型消费场景，如 下班到家小酌、周末炖菜、烧烤摊朋友小聚",
+    )
     brand_tone: str = Field(
         default="朴实、产区自豪感、有匠心但不装",
         description="品牌语气"
+    )
+    tone_taboos: list[str] = Field(
+        default_factory=list,
+        description="语气红线（选填），如 不摆大师腔、不吹年份；填了会在文末展示红线自查",
     )
     extra_material: Optional[str] = Field(
         default=None,
