@@ -2,7 +2,8 @@
 # 酒阵 Agent · 评委一键启动（首次运行自动安装依赖）
 # 用法：zsh setup.sh   然后浏览器打开 http://localhost:5173
 set -e
-cd "$(dirname "$0")"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$ROOT"
 
 echo "==> 1/4 检查 Python..."
 PY=${PYTHON:-python3}
@@ -20,15 +21,15 @@ command -v node >/dev/null || { echo "需要先安装 Node.js 18+（https://node
 [ -d dist ] || npm run build --silent
 
 echo "==> 4/4 启动服务..."
-cd ..
+cd "$ROOT"
 # 清理占用端口的旧进程
 for port in 8000 5173; do
-  pids=$(lsof -nP -iTCP:$port -sTCP:LISTEN -t 2>/dev/null || true)
+  pids=$(lsof -ti tcp:$port 2>/dev/null || true)
   [ -n "$pids" ] && kill $pids 2>/dev/null || true
 done
 sleep 1
-cd backend && nohup ./.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/jiuzhen-api.log 2>&1 < /dev/null &
-cd frontend && nohup node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5173 --strictPort > /tmp/jiuzhen-front.log 2>&1 < /dev/null &
+(cd backend && nohup ./.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/jiuzhen-api.log 2>&1 < /dev/null &)
+(cd frontend && nohup node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5173 --strictPort > /tmp/jiuzhen-front.log 2>&1 < /dev/null &)
 sleep 4
 
 echo ""
