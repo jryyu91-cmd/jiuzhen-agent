@@ -4,6 +4,39 @@ export interface FactEvidence {
   label: string
   value: string
   source: string
+  source_excerpt?: string
+  confidence?: 'confirmed' | 'inferred' | 'needs_review' | string
+}
+
+export interface SourceMaterial {
+  name: string
+  media_type: string
+  text: string
+  source_kind: string
+}
+
+export interface MaterialAnalysis {
+  source_names: string[]
+  extracted_facts: FactEvidence[]
+  missing_fields: string[]
+  notes: string[]
+  mode: string
+}
+
+export interface MaterialProfileDraft {
+  name: string
+  location: string
+  product_name: string
+  price_range: string
+  selling_points: string[]
+  fact_evidence: FactEvidence[]
+  extra_material: string
+}
+
+export interface MaterialExtractResponse {
+  materials: SourceMaterial[]
+  analysis: MaterialAnalysis
+  draft: MaterialProfileDraft
 }
 
 export interface ProfileFull {
@@ -38,6 +71,7 @@ export interface DistilleryInfo {
   tone_taboos?: string[]
   fact_evidence?: FactEvidence[]
   extra_material?: string
+  source_materials?: SourceMaterial[]
 }
 
 export interface AudienceSegment {
@@ -89,6 +123,7 @@ export interface GenerateResponse {
   diagnosis: MarketingDiagnosis
   contents: GeneratedContent[]
   compliance: ComplianceReport
+  material_analysis?: MaterialAnalysis | null
   pipeline_trace: string[]
 }
 
