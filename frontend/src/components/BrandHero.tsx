@@ -1,4 +1,9 @@
-export default function BrandHero() {
+interface BrandHeroProps {
+  onQuickDemo: () => void
+  quickDemoDisabled?: boolean
+}
+
+export default function BrandHero({ onQuickDemo, quickDemoDisabled = false }: BrandHeroProps) {
   const go = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -29,9 +34,10 @@ export default function BrandHero() {
             当白酒从单一宴饮走向更多日常消费场景，中小酒企最缺的不只是文案，而是判断。把产品底子交给酿见，它先找人群和生活场景，再给出内容方案、事实核验与营销风险检查。
           </p>
           <div className="hero-actions">
-            <button className="btn btn-primary" onClick={() => go('workbench')}>开始一次营销诊断 <span>→</span></button>
-            <button className="btn btn-secondary" onClick={() => go('cases')}>先用演示档案体验</button>
+            <button className="btn btn-primary" onClick={onQuickDemo} disabled={quickDemoDisabled}>30 秒一键体验演示 <span>→</span></button>
+            <button className="btn btn-secondary" onClick={() => go('workbench')}>自己填写产品信息</button>
           </div>
+          <p className="hero-demo-note">首次体验 / 评委测试：无需填写，直接跑完整条营销链。</p>
           <div className="value-strip" aria-label="产品特点">
             <div><strong>01</strong><span>不知道卖给谁<br />也能开始</span></div>
             <div><strong>02</strong><span>先做营销判断<br />再生成内容</span></div>
