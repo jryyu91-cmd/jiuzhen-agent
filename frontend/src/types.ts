@@ -96,6 +96,8 @@ export interface MarketingDiagnosis {
   scene_opportunities: SceneOpportunity[]
   channel_plan: string[]
   next_action: string
+  reasoning_mode: string
+  reasoning_basis: string[]
 }
 
 export interface ComplianceIssue {
