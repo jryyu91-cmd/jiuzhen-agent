@@ -46,16 +46,16 @@ export default function App() {
   }
 
   const scrollToResult = () =>
-    workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.setTimeout(() => workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
 
   const handleGenerate = async () => {
     setLoading(true)
     setError(null)
+    scrollToResult()
     try {
       const res = await generate(form)
       setResult(res)
       await pullComments(form)
-      scrollToResult()
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误')
     } finally {
@@ -66,6 +66,7 @@ export default function App() {
   const handleUseProfile = async (p: ProfileFull) => {
     setLoading(true)
     setError(null)
+    scrollToResult()
     try {
       const res = await generateByProfile(p.profile_id)
       const filled: DistilleryInfo = {
@@ -86,7 +87,6 @@ export default function App() {
       setForm(filled)
       setResult(res)
       await pullComments(filled)
-      scrollToResult()
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误')
     } finally {
@@ -100,11 +100,15 @@ export default function App() {
       <main>
         <ShowcaseGallery profiles={profiles} onUseProfile={handleUseProfile} loading={loading} />
 
-        <section className="section" id="workbench">
+        <section className="section workbench-section" id="workbench">
           <div className="wrap">
-            <div className="workbench-head">
-              <h2>营销工作台</h2>
-              <p className="sub">先交代产品底子；不知道卖给谁、在哪个场景卖，也可以交给 Agent 先诊断。</p>
+            <div className="section-heading workbench-heading">
+              <div>
+                <span className="section-kicker">MARKETING WORKSPACE</span>
+                <h2>把一瓶酒，变成一条能执行的营销任务</h2>
+                <p>左边告诉酿见你知道什么，右边看它为什么这么判断。整个过程不要求你先懂营销。</p>
+              </div>
+              <div className="workspace-legend"><span><i className="required-dot" /> 产品必填</span><span><i className="optional-dot" /> 其余可跳过</span></div>
             </div>
             <Workbench
               ref={workbenchRef}
@@ -121,12 +125,10 @@ export default function App() {
         <CommentsDemo comments={comments} loading={loading} />
       </main>
       <footer className="footer">
-        <div className="wrap">
-          <span className="brand">酒阵 Agent</span>
-          <span className="dot">·</span>
-          <span>AI×白酒场景化营销</span>
-          <span className="dot">·</span>
-          <span>诊断 → 人群场景 → 内容 → 事实核验 → 合规检查</span>
+        <div className="wrap footer-inner">
+          <div className="footer-brand"><span className="brand-mark small">见</span><div><strong>酿见 AI</strong><small>先看见消费者，再决定怎么卖。</small></div></div>
+          <div className="footer-flow"><span>营销诊断</span><i>→</i><span>人群场景</span><i>→</i><span>内容生成</span><i>→</i><span>事实 / 合规</span></div>
+          <span className="footer-note">AI × 白酒场景化营销</span>
         </div>
       </footer>
     </div>
