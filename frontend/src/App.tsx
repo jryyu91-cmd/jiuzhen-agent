@@ -94,9 +94,14 @@ export default function App() {
     }
   }
 
+  const handleQuickDemo = () => {
+    const demo = profiles.find((p) => p.profile_id === 'qingxi') ?? profiles[0]
+    if (demo) handleUseProfile(demo)
+  }
+
   return (
     <div className="page">
-      <BrandHero />
+      <BrandHero onQuickDemo={handleQuickDemo} quickDemoDisabled={loading || profiles.length === 0} />
       <main>
         <ShowcaseGallery profiles={profiles} onUseProfile={handleUseProfile} loading={loading} />
 
