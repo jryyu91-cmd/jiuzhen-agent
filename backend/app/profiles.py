@@ -34,7 +34,7 @@ _DEMO_PROFILES: dict[str, BrandProfile] = {
         product_name="青溪·小坛",
         price_range="168元",
         target_audience="25-35岁成年朋友小聚与日常佐餐人群",
-        selling_points=["小坛储存", "42%vol", "小规格"],
+        selling_points=["小坛储存", "53%vol", "小规格"],
         brand_tone="轻松、实在、像会喝酒的朋友在聊天",
         tone_taboos=["不摆大师腔", "不讲玄学", "不用『尊贵』类词汇"],
         topic_preferences=["朋友小聚", "佐餐搭配", "夜宵场景"],
@@ -44,7 +44,7 @@ _DEMO_PROFILES: dict[str, BrandProfile] = {
         ],
         fact_evidence=[
             FactEvidence(label="储存", value="小坛储存", source="演示档案"),
-            FactEvidence(label="酒精度", value="42%vol", source="演示档案"),
+            FactEvidence(label="酒精度", value="53%vol", source="演示档案"),
             FactEvidence(label="规格", value="小规格", source="演示档案"),
         ],
     ),
@@ -79,7 +79,7 @@ _DEMO_SOURCE_MATERIALS: dict[str, list[SourceMaterial]] = {
 产品名称：青溪·小坛
 建议零售价：168元
 产区：贵州遵义·习水县
-瓶身标注酒精度：42%vol
+瓶身标注酒精度：53%vol
 产品资料：小坛储存，小规格包装。
 说明：以上均为比赛演示资料，不代表真实企业经营事实。""",
         ),
