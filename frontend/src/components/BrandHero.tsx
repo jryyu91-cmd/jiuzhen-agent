@@ -15,7 +15,7 @@ export default function BrandHero({ onQuickDemo, quickDemoDisabled = false }: Br
           <span className="brand-mark">见</span>
           <span className="brand-copy">
             <strong>酿见 AI</strong>
-            <small>白酒场景化营销智能体</small>
+            <small>中小酒企的 AI 营销大脑</small>
           </span>
         </button>
         <nav className="topnav" aria-label="页面导航">
@@ -23,25 +23,25 @@ export default function BrandHero({ onQuickDemo, quickDemoDisabled = false }: Br
           <button onClick={() => go('workbench')}>工作台</button>
           <button onClick={() => go('comments')}>承接</button>
         </nav>
-        <button className="top-cta" onClick={() => go('workbench')}>开始诊断 <span>↗</span></button>
+        <button className="top-cta" onClick={() => go('workbench')}>交资料试试 <span>↗</span></button>
       </div>
 
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <div className="eyebrow"><span className="live-dot" /> AI × 白酒消费新场景</div>
-          <h1>先看见消费者，<br />再决定这瓶酒<span>怎么卖。</span></h1>
+          <div className="eyebrow"><span className="live-dot" /> RAW MATERIALS → MARKETING MEMORY</div>
+          <h1>资料不用先整理，<br />酿见先替你<span>看懂。</span></h1>
           <p className="hero-sub">
-            当白酒从单一宴饮走向更多日常消费场景，中小酒企最缺的不只是文案，而是判断。把产品底子交给酿见，它先找人群和生活场景，再给出内容方案、事实核验与营销风险检查。
+            把产品手册、PDF、历史内容和零散文字交进来。酿见先提取有来源的品牌事实，再判断这瓶酒该优先进入谁的什么生活场景，最后生成内容并做事实与营销风险检查。
           </p>
           <div className="hero-actions">
-            <button className="btn btn-primary" onClick={onQuickDemo} disabled={quickDemoDisabled}>30 秒一键体验演示 <span>→</span></button>
-            <button className="btn btn-secondary" onClick={() => go('workbench')}>自己填写产品信息</button>
+            <button className="btn btn-primary" onClick={onQuickDemo} disabled={quickDemoDisabled}>30 秒看完整演示 <span>→</span></button>
+            <button className="btn btn-secondary" onClick={() => go('workbench')}>用自己的资料试试</button>
           </div>
-          <p className="hero-demo-note">首次体验 / 评委测试：无需填写，直接跑完整条营销链。</p>
+          <p className="hero-demo-note">不用懂 AI，也不用先会营销。企业已有资料就是入口。</p>
           <div className="value-strip" aria-label="产品特点">
-            <div><strong>01</strong><span>不知道卖给谁<br />也能开始</span></div>
-            <div><strong>02</strong><span>先做营销判断<br />再生成内容</span></div>
-            <div><strong>03</strong><span>事实与合规<br />双重检查</span></div>
+            <div><strong>01</strong><span>散乱资料<br />自动变成档案</span></div>
+            <div><strong>02</strong><span>事实有来源<br />判断有上下文</span></div>
+            <div><strong>03</strong><span>一次确认<br />后续持续复用</span></div>
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default function BrandHero({ onQuickDemo, quickDemoDisabled = false }: Br
           <div className="preview-head">
             <div>
               <span className="preview-label">AGENT WORKFLOW</span>
-              <h2>一次任务，跑完整条营销链</h2>
+              <h2>不是先写文案，是先理解这家酒厂</h2>
             </div>
             <span className="agent-status"><i /> READY</span>
           </div>
@@ -57,22 +57,22 @@ export default function BrandHero({ onQuickDemo, quickDemoDisabled = false }: Br
           <div className="prompt-card">
             <span className="prompt-icon">✦</span>
             <div>
-              <small>你只需要告诉我</small>
-              <p>“这瓶酒 168 元，我不知道该卖给谁。”</p>
+              <small>真实使用更接近这样</small>
+              <p>产品手册.pdf + 瓶身资料 + 过去发过的内容</p>
             </div>
           </div>
 
           <ol className="agent-flow">
-            <li><span>01</span><div><strong>识别产品底子</strong><small>价格、卖点、产区、真实证据</small></div><b>✓</b></li>
-            <li><span>02</span><div><strong>判断消费者</strong><small>谁更可能买、为什么买</small></div><b>✓</b></li>
-            <li><span>03</span><div><strong>寻找生活场景</strong><small>佐餐、小聚、自饮、轻礼赠……</small></div><b>✓</b></li>
+            <li><span>01</span><div><strong>读企业原始资料</strong><small>PDF、文本、历史内容</small></div><b>✓</b></li>
+            <li><span>02</span><div><strong>建立事实证据</strong><small>度数、规格、产区、工艺 + 来源</small></div><b>✓</b></li>
+            <li><span>03</span><div><strong>判断人群与场景</strong><small>把事实变成可执行营销判断</small></div><b>✓</b></li>
             <li><span>04</span><div><strong>生成渠道内容</strong><small>公众号、朋友圈、短视频</small></div><b>✓</b></li>
-            <li><span>05</span><div><strong>发布前检查</strong><small>事实缺口 + 营销风险</small></div><b>✓</b></li>
+            <li><span>05</span><div><strong>发布前检查</strong><small>事实缺口 + 酒类营销风险</small></div><b>✓</b></li>
           </ol>
 
           <div className="preview-result">
-            <span>酿见建议</span>
-            <p>不要先讲“工艺有多复杂”，先测试“周末朋友小聚”的消费场景。</p>
+            <span>资料理解示例</span>
+            <p>42%vol ✓ 来自瓶身资料；168 元 ✓ 来自产品手册；“纯粮酿造”未找到证据，暂不建议对外使用。</p>
           </div>
         </aside>
       </div>
