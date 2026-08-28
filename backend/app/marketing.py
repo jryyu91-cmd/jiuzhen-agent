@@ -22,9 +22,11 @@ def _price_value(price: str) -> int:
 
 def _price_bucket(price: str) -> str:
     value = _price_value(price)
-    if value and value <= 200:
+    if not value:
+        return "unknown"
+    if value <= 200:
         return "daily"
-    if value and value <= 500:
+    if value <= 500:
         return "mid"
     return "premium"
 
@@ -101,6 +103,7 @@ def _try_llm_diagnose(info: DistilleryInfo) -> MarketingDiagnosis | None:
         "你是服务中国中小白酒企业的营销诊断 Agent。只基于给定企业事实与明确输入做推理。"
         "事实和建议必须分开：不得把行业常识写成该企业事实，不得编造销量、渠道、奖项、工艺、用户评价。"
         "所有建议对象必须是成年消费者，不针对未成年人；不鼓励过量饮酒，不将饮酒与解压、治愈、功能效果绑定。"
+        "如果价格、规格、渠道等关键资料缺失，要降低结论确定性并明确待确认项。"
         "输出一个可小范围验证的策略，不要给宏大空话。只返回 JSON。"
     )
     shape = {
@@ -146,7 +149,38 @@ def _rule_diagnose(info: DistilleryInfo) -> MarketingDiagnosis:
     low_degree = _low_degree(info)
     small_format = _small_format(info)
 
-    if bucket == "daily":
+    if bucket == "unknown":
+        audiences = [
+            AudienceSegment(
+                name="待验证的成年朋友聚餐人群",
+                need="先验证产品在真实熟人聚餐中的接受度，不在关键价格信息缺失时给出过度细分结论",
+                trigger="朋友聚餐、家庭来客",
+                recommended_scene="熟人聚餐测试",
+                priority="待验证",
+            ),
+            AudienceSegment(
+                name="企业已有成交客群",
+                need="优先从过去真实购买者和咨询者里找线索，而不是让 AI 凭空定义消费者",
+                trigger="历史成交、咨询、门店反馈",
+                recommended_scene="回看真实成交场景",
+                priority="高（需企业补数据）",
+            ),
+        ]
+        scenes = [
+            SceneOpportunity(
+                scene="真实成交场景回看",
+                why_fit="价格等关键资料仍缺失，先从企业真实成交和咨询记录找场景比武断推荐更可靠",
+                content_angle="整理过去谁来问、为什么买、在哪种场合使用",
+                conversion_action="先补价格和3-5条历史咨询/成交记录，再进入下一轮诊断",
+            ),
+            SceneOpportunity(
+                scene="熟人聚餐小测试",
+                why_fit="作为低成本探索场景使用，不把它当成已经验证的品牌定位",
+                content_angle="用真实餐桌与已确认产品事实做一条内容",
+                conversion_action="记录询价、私信和到店反馈，7天后复盘",
+            ),
+        ]
+    elif bucket == "daily":
         audiences = [
             AudienceSegment(
                 name="25-35岁成年朋友小聚人群",
@@ -265,6 +299,8 @@ def _rule_diagnose(info: DistilleryInfo) -> MarketingDiagnosis:
     basis = []
     if info.price_range:
         basis.append(f"价格：{info.price_range}")
+    else:
+        basis.append("价格：待确认（因此当前建议降低确定性）")
     basis.extend(f"已确认事实：{fact}" for fact in facts[:4])
     basis.append(f"本次目标：{info.marketing_goal}")
 
