@@ -1,201 +1,149 @@
-"""酒阵 Agent · 内容生成流水线
-
-48 小时黑客松版本：模板 + 规则引擎驱动，保证离线可跑、演示稳定。
-LLM 接入留了 `llm` 开关（USE_LLM 环境变量），现场网络不稳时自动降级到模板模式。
-
-写作方法论（源自粥左罗人×AI共创营拆解，见知识库爆款方法论目录）：
-- 开头：具体场景把读者拖进画面（不喊口号）
-- 中段：段间递钩子，抽象概括换看得见的细节
-- 收尾：最忌「综上所述」式总结。只做三件事之一——
-  ①把全文的劲收成一句记得住的话 ②回扣开头闭环 ③给一个具体行动
-- 人味三参数：具体度 / 判断浓度 / 在场感；AI 腔特征词见一个删一个
-
-生活方式叙事（2026 行业趋势，见作品说明第 0 栏引用）：
-- 白酒消费从「应酬驱动」转向「情绪价值驱动」——家庭小酌、朋友小聚、
-  露营微醺、一人独酌等轻场景占比持续走高（中国酒业协会 2025 报告）
-- 内容不讲「这是该继承的传统」，讲「这杯很懂你」：
-  工艺只做信任背书（三分之一篇幅），生活场景才是主角
-- 场景词库：下班到家、周末炖菜、老友上门、阳台夜风、烧烤摊、大排档
-"""
+"""酒阵 Agent · 场景化内容生成流水线（营销诊断后的执行层）"""
 import os
 
 from .models import DistilleryInfo, GeneratedContent
 
 USE_LLM = os.getenv("USE_LLM", "0") == "1"
 
-# 生活方式场景库：生成时按目标人群轮换，避免千篇一律
 LIFE_SCENES = [
     {
-        "moment": "周五晚上，加完班到家，鞋一脱，饭还没好",
-        "act": "从柜子里拿出这瓶，倒上一小杯，就着厨房飘来的烟火气先抿一口",
-        "payoff": "一天的火气，到第三口的时候，就下去了",
+        "moment": "周五晚上，饭菜刚端上桌，手机终于安静下来",
+        "act": "桌上放着一瓶{product}，不用等什么正式酒局",
+        "payoff": "这一桌的重点不是应酬，是把一顿普通饭吃得更有记忆点",
     },
     {
-        "moment": "周末在家炖肉，汤汁咕嘟了两个钟头",
-        "act": "开一瓶{product}，自己先倒半杯，靠在厨房门口等肉烂",
-        "payoff": "肉香混着酱香，这一顿饭还没上桌，就算成了",
+        "moment": "周末在家炖肉，厨房里一直冒着热气",
+        "act": "{product}摆在家常菜旁边，和这一桌烟火气放在一起",
+        "payoff": "白酒不一定只属于宴会，也可以属于一顿认真吃的晚饭",
     },
     {
-        "moment": "老朋友难得上门，菜是临时炒的",
-        "act": "桌上摆一瓶{product}，不用劝，倒上就行",
-        "payoff": "好酒不吵，它就是把话头递给你们的那个",
+        "moment": "老朋友难得上门，菜是临时炒的，话却有很多",
+        "act": "{product}放在桌上，酒只是这次见面的一个陪衬",
+        "payoff": "真正让人记住的，是朋友和这顿饭，不是劝了多少杯",
     },
     {
-        "moment": "夏天的晚上，阳台上有点风",
-        "act": "一小杯{product}，一部看了一半的老电影",
-        "payoff": "微醺就好，明天还要上班",
+        "moment": "夜宵摊刚坐满，几个人点了烧烤和热菜",
+        "act": "一瓶{product}和几道菜一起上桌，场景轻松，没有复杂仪式",
+        "payoff": "对白酒来说，新的机会也许就在这些更日常、更轻的餐桌上",
     },
 ]
 
 
-def _selling_points_text(info: DistilleryInfo) -> str:
-    if info.selling_points:
-        return "、".join(info.selling_points)
-    return "大曲坤沙工艺、赤水河谷产区、传统窖藏"
+def _verified_points(info: DistilleryInfo) -> list[str]:
+    """只返回有证据支撑的产品事实；没有证据时不自动编造工艺、年份或资质。"""
+    verified: list[str] = []
+    evidence_text = " ".join(f.value for f in info.fact_evidence)
+    for point in info.selling_points:
+        if point and (not info.fact_evidence or point in evidence_text):
+            # 演示模式允许用户主动填写的卖点进入草稿，但合规层会继续标记证据缺口。
+            verified.append(point)
+    return verified
+
+
+def _facts_text(info: DistilleryInfo) -> str:
+    points = _verified_points(info)
+    return "、".join(points) if points else "产品的具体工艺、产区和规格信息"
 
 
 def _scene_anchor(info: DistilleryInfo) -> str:
-    """从酒厂故事素材里取真实细节做人味锚点；没有就用产区常识兜底。"""
     if info.extra_material and len(info.extra_material.strip()) > 10:
-        snippet = info.extra_material.strip().replace("\n", "，")[:60]
-        return snippet
-    return "酒师傅凌晨四点看酒醅，说这时候的酸香最骗不了人"
+        return info.extra_material.strip().replace("\n", "，")[:80]
+    return "目前还缺少这家酒厂独有的真实人物、车间或餐桌细节，正式发布前建议补充"
 
 
-def _pick_scene(info: DistilleryInfo, index: int = 0) -> dict:
-    """选生活场景：优先按用户填的消费场景关键词匹配，无则按人群推断。
-
-    （修复：原实现 index % 1 恒为 0，场景轮换失效，只有 0/3 两个场景会被选中）
-    """
-    # 1) 用户填的典型消费场景优先：关键词 → 场景库映射
+def _pick_scene(info: DistilleryInfo) -> dict:
     scene_text = info.consume_scene or ""
-    keyword_map = [
-        (("炖菜", "炖肉"), 1),          # 周末炖菜
-        (("烧烤", "聚会", "小聚", "朋友"), 2),  # 老友上门小聚
-        (("阳台", "独酌", "一人"), 3),  # 阳台夜风
+    mapping = [
+        (("炖菜", "炖肉", "家庭", "佐餐"), 1),
+        (("朋友", "小聚", "老友"), 2),
+        (("烧烤", "夜宵", "大排档"), 3),
     ]
-    for keywords, idx in keyword_map:
+    for keywords, idx in mapping:
         if any(k in scene_text for k in keywords):
             return LIFE_SCENES[idx]
-    # 2) 无场景词时按人群推断：年轻人群取更轻的场景（烧烤摊），默认下班到家
-    young = any(k in info.target_audience for k in ("25", "年轻"))
-    return LIFE_SCENES[(3 if young else 0) + index % len(LIFE_SCENES)]
+    return LIFE_SCENES[0]
 
 
 def _tone_opener(info: DistilleryInfo) -> str:
-    """消费 brand_tone：按品牌语气第一个词生成开场定调句（档案差异的第一眼）。"""
-    tone = info.brand_tone.split("、")[0] if info.brand_tone else "实在"
-    tone_map = {
-        "轻松": "咱随便聊聊，不整虚的——",
-        "朴实": "这几句话，说得实在——",
-    }
-    return tone_map.get(tone, f"按我们一贯的调子，{tone}地说——")
-
-
-def _taboo_note(info: DistilleryInfo) -> str:
-    """消费 tone_taboos：文末红线自查声明（建档酒厂独有，衬托「一厂一档」价值）。"""
-    if info.tone_taboos:
-        return f"\n> 编辑按（品牌红线自查）：{'；'.join(info.tone_taboos)}——这些坑，这篇一个没踩。\n"
-    return ""
+    tone = info.brand_tone.split("、")[0] if info.brand_tone else "可信"
+    return {
+        "轻松": "不讲复杂仪式，先从一顿普通饭说起——",
+        "朴实": "不绕弯，先说一个真实的消费场景——",
+    }.get(tone, f"按品牌一贯的{tone}语气来说——")
 
 
 def gen_wechat(info: DistilleryInfo) -> GeneratedContent:
-    """公众号文案：生活场景开头 → 工艺做信任背书 → 回到生活收尾（情绪价值闭环）"""
-    sp = _selling_points_text(info)
-    anchor = _scene_anchor(info)
     scene = _pick_scene(info)
-    opener = _tone_opener(info)
-    taboo = _taboo_note(info)
-    title = f"成年人的酒，是留给自己的那半小时"
+    facts = _facts_text(info)
+    anchor = _scene_anchor(info)
+    title = "白酒的新机会，可能不在下一场应酬里"
     body = f"""{scene['moment']}。
 
-{scene['act']}。
+{scene['act'].format(product=info.product_name)}。
 
 {scene['payoff']}。
 
-{opener}喝酒这件事，说到底喝的不是酒精，是这段时间归你。应酬桌上那叫任务，自己倒的这杯才叫生活——这也是我们想认真说说{info.product_name}的原因。
+{_tone_opener(info)}过去很多白酒内容总在讲宴请、身份和礼赠，但消费者的生活远不止这些场景。对{info.product_name}来说，更值得尝试的是：让产品进入具体的饭局、朋友见面和日常餐桌，而不是先给消费者上一堂工艺课。
 
-它是{info.name}的酒，{info.location}产的。{sp}——这些是底气，但今天不用多讲，讲多了像上课。你只需要知道：{anchor}。这瓶酒在你拧开瓶盖之前，已经被人这么盯了一个周期。
+关于产品本身，目前可以确认或需要继续核验的重点是：{facts}。真正能建立信任的，不是堆形容词，而是把这些事实和证据说清楚。
 
-{info.price_range}。不贵，也不用搓着手等什么特殊日子。炖肉的时候开一瓶，老朋友来了开一瓶，或者就只是今晚风不错。
+还有一类内容更值得长期积累：{anchor}。这些只有这家酒厂才有的真实细节，才是地方品牌区别于通用白酒文案的地方。
 
-酒是酿出来等人喝的，不是供着看的。今晚那半小时，归你。
-{taboo}
-> 下一篇去看看制曲车间——一块曲砖的前四十天，比你想的热闹。
+先把一款酒放进一个真实生活场景里，让消费者知道“什么时候会想到它”，再谈品牌心智。
 """
-    return GeneratedContent(
-        channel="wechat",
-        title=title,
-        body=body,
-        hashtags=["酱香型白酒", "生活方式", info.location],
-    )
+    return GeneratedContent(channel="wechat", title=title, body=body, hashtags=["白酒消费场景", "品牌内容", info.location])
 
 
 def gen_moments(info: DistilleryInfo) -> GeneratedContent:
-    """朋友圈短文案：生活切面 + 情绪落点，产品只带一笔"""
+    scene = info.consume_scene or "一顿普通的朋友聚餐"
     body = (
-        "人到中年才懂，最好的酒局是没局。\n"
-        "下班回家，饭菜上桌，自己倒的那杯最实在。\n"
-        f"{info.product_name}，{info.price_range}，留给自己的那半小时。"
+        f"白酒不一定非要等到正式酒局。\n"
+        f"{scene}，也可以成为它的新场景。\n"
+        f"{info.product_name} · {info.price_range}\n"
+        "先让消费者知道什么时候会想到这瓶酒，再慢慢讲产品本身。"
     )
-    return GeneratedContent(
-        channel="moments",
-        title=None,
-        body=body,
-        hashtags=[f"#{info.product_name}", "#生活要有酒"],
-    )
+    return GeneratedContent(channel="moments", body=body, hashtags=["#白酒生活方式", "#消费场景"])
 
 
 def gen_video_script(info: DistilleryInfo) -> GeneratedContent:
-    """短视频脚本：从车间到餐桌——工艺半程、生活半程，落点在情绪"""
-    sp = _selling_points_text(info)
+    facts = _facts_text(info)
     body = f"""【时长】约 30 秒 · 竖屏 9:16
 
-【0-3s 钩子 · 生活特写】
-画面：晚上九点，楼里灯一盏盏亮，男主开门进屋，把外卖袋放上桌
-口播：「这届人喝酒，不为应酬了。」
+【0-4s】
+画面：朋友聚餐、家常菜、夜宵摊三个生活镜头快切，不出现饮酒动作。
+口播：「白酒的新机会，可能不在下一场应酬里。」
 
-【3-8s 转折 · 倒酒特写】
-画面：开瓶、拉酒线、倒一小杯，酱香酒的挂杯
-口播：「{info.product_name}，{sp}。{info.price_range}——是给自己喝的价位。」
+【4-10s】
+画面：{info.product_name}产品静物 + 餐桌环境。
+口播：「先别急着讲一堆工艺，先回答一个问题：它适合出现在什么生活场景？」
 
-【8-15s 工艺背书 · 快剪】
-画面：酒师傅探酒醅/曲仓/窖池（三个快切，每个 2 秒）
-口播：「在你开瓶之前，它在{info.location}被人这么盯了一整个周期。」
+【10-20s】
+画面：真实酒厂人物、车间、产区资料或可核验产品细节。
+口播：「再把产品证据讲清楚：{facts}。没有资料支撑的卖点，不硬说。」
 
-【15-25s 生活 · 主场景】
-画面：饭桌热气、阳台夜风、老友碰杯（三个慢镜）
-口播：「炖肉的时候来一杯，老朋友来了来一杯，或者就只是——今晚风不错。」
+【20-27s】
+画面：家庭聚餐、老友来访、烧烤夜宵等成年消费者场景。
+口播：「从一个场景开始，让消费者知道什么时候会想到这瓶酒。」
 
-【25-30s 收尾 · 留白】
-画面：杯子放下，人靠回椅背，灯光暖
-口播（轻）：「酒是酿出来等人喝的。今晚那半小时，归你。」
+【27-30s】
 字幕：{info.product_name} · {info.location}
-
-【字幕贴纸建议】「给自己喝的价位」/「今晚那半小时，归你」
-【BGM】前段低鼓点，15 秒后转暖色木吉他，收尾渐弱
+口播：「先进入生活，再进入心智。」
 """
-    return GeneratedContent(
-        channel="video",
-        title=f"{info.product_name} · 30秒「留给自己的半小时」脚本",
-        body=body,
-        hashtags=["短视频脚本", "白酒生活方式"],
-    )
+    return GeneratedContent(channel="video", title=f"{info.product_name} · 场景化短视频脚本", body=body, hashtags=["白酒营销", "场景内容"])
 
 
 def run_pipeline(info: DistilleryInfo) -> tuple[list[GeneratedContent], list[str]]:
-    anchor_src = "酒厂故事素材" if info.extra_material else "产区常识兜底"
-    scene_src = f"消费场景「{info.consume_scene}」" if info.consume_scene else "目标人群推断"
+    scene_src = f"企业输入场景「{info.consume_scene}」" if info.consume_scene else "由营销诊断反推场景"
     trace = [
-        f"① 解析输入：{info.name} / {info.product_name} / 价格带 {info.price_range}",
-        f"② 提取卖点 + 场景细节锚点（{anchor_src}）",
-        f"③ 生活方式叙事装配：场景选取依据={scene_src}；工艺做背书（1/3），生活场景做主角（2/3）",
-        "④ 并行生成三通道内容：公众号 → 朋友圈 → 短视频脚本",
-        "⑤ 人味终审：具体度锚点 / 段间钩子 / 收尾禁总结（粥左罗共创方法论）",
+        f"① 解析产品底层信息：{info.name} / {info.product_name} / {info.price_range}",
+        "② 先做消费者与场景诊断，不要求用户先成为营销专家",
+        f"③ 场景装配：{scene_src}",
+        "④ 事实约束：没有企业资料支撑的工艺、年份、资质、物流等信息不自动编造",
+        "⑤ 生成公众号 / 朋友圈 / 短视频三通道草稿",
+        "⑥ 进入品牌事实与酒类营销合规检查",
     ]
     if info.tone_taboos:
-        trace.append(f"⑤+ 品牌红线自查：{('、'.join(info.tone_taboos))} 已生效")
+        trace.append(f"⑥+ 品牌语气红线：{'、'.join(info.tone_taboos)}")
     if not USE_LLM:
-        trace.append("⑥ 当前为模板模式（USE_LLM=0），接入 LLM 后本步骤替换为模型生成")
-    contents = [gen_wechat(info), gen_moments(info), gen_video_script(info)]
-    return contents, trace
+        trace.append("⑦ 当前为规则版 MVP；后续可接 LLM + 行业知识库 + 历史经营数据")
+    return [gen_wechat(info), gen_moments(info), gen_video_script(info)], trace
