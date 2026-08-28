@@ -1,76 +1,74 @@
-// 区块① 品牌定位区：生活方式叙事 + 三缺痛点 + ROI 双 bar（纯静态，无 props）
-import { useEffect, useRef } from 'react'
-
 export default function BrandHero() {
-  const barRefs = useRef<(HTMLDivElement | null)[]>([])
-
-  // ROI 双 bar 进场动画：width 0 → 目标值，错峰 150ms
-  useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = []
-    barRefs.current.forEach((bar, i) => {
-      if (!bar) return
-      timers.push(
-        setTimeout(() => {
-          timers.push(setTimeout(() => {
-            bar.style.width = (bar.dataset.w ?? '0') + '%'
-          }, i * 150))
-        }, 250),
-      )
-    })
-    return () => timers.forEach(clearTimeout)
-  }, [])
+  const go = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <header className="hero">
-      <div className="wrap">
-        <div className="kicker hero-kicker">酱香 × 数智</div>
-        <h1>白酒，正在变成一种<span className="accent-word">生活方式</span></h1>
-        <p className="hero-sub">
-          像咖啡一样，从应酬桌走向生活桌<span className="dash">——</span>酒阵 Agent 帮酒厂把这句话，讲给年轻人听。
-        </p>
+      <div className="topbar wrap">
+        <button className="brand-lockup" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="返回顶部">
+          <span className="brand-mark">见</span>
+          <span className="brand-copy">
+            <strong>酿见 AI</strong>
+            <small>白酒场景化营销智能体</small>
+          </span>
+        </button>
+        <nav className="topnav" aria-label="页面导航">
+          <button onClick={() => go('cases')}>案例</button>
+          <button onClick={() => go('workbench')}>工作台</button>
+          <button onClick={() => go('comments')}>承接</button>
+        </nav>
+        <button className="top-cta" onClick={() => go('workbench')}>开始诊断 <span>↗</span></button>
+      </div>
 
-        <div className="pains">
-          <article className="card pain">
-            <span className="pain-tag">缺品牌</span>
-            <h3>有酒没故事</h3>
-            <p>酒是好酒，讲不出<em>产区的底气</em>和匠人的门道，货架上泯然众人。</p>
-          </article>
-          <article className="card pain">
-            <span className="pain-tag">缺资金</span>
-            <h3>代运营太贵</h3>
-            <p>传统代运营报价 <em>3000–8000 元/月</em> 起，中小酒厂难以长期负担。</p>
-          </article>
-          <article className="card pain">
-            <span className="pain-tag">缺人才</span>
-            <h3>一人写不动三平台</h3>
-            <p>公众号、朋友圈、短视频脚本——<em>一个人</em>根本追不过内容节奏。</p>
-          </article>
+      <div className="wrap hero-grid">
+        <div className="hero-copy">
+          <div className="eyebrow"><span className="live-dot" /> AI × 白酒消费新场景</div>
+          <h1>先看见消费者，<br />再决定这瓶酒<span>怎么卖。</span></h1>
+          <p className="hero-sub">
+            中小酒企不需要先学会营销。把产品底子交给酿见，它先判断人群和生活场景，再给出内容方案、事实核验与营销风险检查。
+          </p>
+          <div className="hero-actions">
+            <button className="btn btn-primary" onClick={() => go('workbench')}>开始一次营销诊断 <span>→</span></button>
+            <button className="btn btn-secondary" onClick={() => go('cases')}>先用演示档案体验</button>
+          </div>
+          <div className="value-strip" aria-label="产品特点">
+            <div><strong>01</strong><span>不知道卖给谁<br />也能开始</span></div>
+            <div><strong>02</strong><span>先做营销判断<br />再生成内容</span></div>
+            <div><strong>03</strong><span>事实与合规<br />双重检查</span></div>
+          </div>
         </div>
 
-        <section className="card roi" aria-label="成本对比">
-          <div className="roi-head">
-            <h3>同样的内容活儿，两种做法</h3>
-            <span>以月度公众号内容为例 · 演示估算</span>
+        <aside className="agent-preview" aria-label="酿见 Agent 工作流程">
+          <div className="preview-head">
+            <div>
+              <span className="preview-label">AGENT WORKFLOW</span>
+              <h2>一次任务，跑完整条营销链</h2>
+            </div>
+            <span className="agent-status"><i /> READY</span>
           </div>
-          <div className="roi-row">
-            <div className="roi-meta">
-              <span className="roi-label">传统代运营</span>
-              <span className="roi-value">6000 元/月</span>
-            </div>
-            <div className="roi-track">
-              <div className="roi-bar muted" data-w="100" ref={(el) => { barRefs.current[0] = el }} />
-            </div>
-          </div>
-          <div className="roi-row">
-            <div className="roi-meta">
-              <span className="roi-label">酒阵 Agent</span>
-              <span className="roi-value">3 分钟/篇<span className="roi-badge">成本降 95%</span></span>
-            </div>
-            <div className="roi-track">
-              <div className="roi-bar grad" data-w="5" ref={(el) => { barRefs.current[1] = el }} />
+
+          <div className="prompt-card">
+            <span className="prompt-icon">✦</span>
+            <div>
+              <small>你只需要告诉我</small>
+              <p>“这瓶酒 168 元，我不知道该卖给谁。”</p>
             </div>
           </div>
-        </section>
+
+          <ol className="agent-flow">
+            <li><span>01</span><div><strong>识别产品底子</strong><small>价格、卖点、产区、真实证据</small></div><b>✓</b></li>
+            <li><span>02</span><div><strong>判断消费者</strong><small>谁更可能买、为什么买</small></div><b>✓</b></li>
+            <li><span>03</span><div><strong>寻找生活场景</strong><small>佐餐、小聚、自饮、轻礼赠……</small></div><b>✓</b></li>
+            <li><span>04</span><div><strong>生成渠道内容</strong><small>公众号、朋友圈、短视频</small></div><b>✓</b></li>
+            <li><span>05</span><div><strong>发布前检查</strong><small>事实缺口 + 营销风险</small></div><b>✓</b></li>
+          </ol>
+
+          <div className="preview-result">
+            <span>酿见建议</span>
+            <p>不要先讲“工艺有多复杂”，先测试“周末朋友小聚”的消费场景。</p>
+          </div>
+        </aside>
       </div>
     </header>
   )
