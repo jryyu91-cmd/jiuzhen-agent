@@ -7,12 +7,12 @@ import Workbench from './components/Workbench'
 import CommentsDemo from './components/CommentsDemo'
 
 const DEFAULT_FORM: DistilleryInfo = {
-  name: '茅台镇老烧坊',
-  location: '贵州遵义·茅台镇',
-  product_name: '老烧坊·窖藏10',
-  price_range: '388元',
+  name: '',
+  location: '',
+  product_name: '',
+  price_range: '',
   target_audience: '',
-  selling_points: ['大曲坤沙', '老酒勾调', '赤水河谷产区'],
+  selling_points: [],
   consume_scene: '',
   marketing_goal: '消费者动销',
   existing_channels: ['朋友圈', '短视频', '公众号'],
@@ -20,6 +20,7 @@ const DEFAULT_FORM: DistilleryInfo = {
   tone_taboos: [],
   fact_evidence: [],
   extra_material: '',
+  source_materials: [],
 }
 
 export default function App() {
@@ -83,6 +84,7 @@ export default function App() {
         tone_taboos: [...p.tone_taboos],
         fact_evidence: [...p.fact_evidence],
         extra_material: p.scene_materials.join('；'),
+        source_materials: [],
       }
       setForm(filled)
       setResult(res)
@@ -110,10 +112,10 @@ export default function App() {
             <div className="section-heading workbench-heading">
               <div>
                 <span className="section-kicker">MARKETING WORKSPACE</span>
-                <h2>把一瓶酒，变成一条能执行的营销任务</h2>
-                <p>左边只填你确定知道的内容，右边看 Agent 的判断和执行结果。目标人群、消费场景不知道都可以留空。</p>
+                <h2>别先填营销表，把酒厂现有资料交进来</h2>
+                <p>酿见先从 PDF、产品资料和已有文字里提取事实，再让你确认少量关键字段，最后才做人群、场景和内容判断。</p>
               </div>
-              <div className="workspace-legend"><span><i className="required-dot" /> 产品必填</span><span><i className="optional-dot" /> 其余可跳过</span></div>
+              <div className="workspace-legend"><span><i className="required-dot" /> AI 先读资料</span><span><i className="optional-dot" /> 人只补缺口</span></div>
             </div>
             <Workbench
               ref={workbenchRef}
@@ -131,9 +133,9 @@ export default function App() {
       </main>
       <footer className="footer">
         <div className="wrap footer-inner">
-          <div className="footer-brand"><span className="brand-mark small">见</span><div><strong>酿见 AI</strong><small>先看见消费者，再决定怎么卖。</small></div></div>
-          <div className="footer-flow"><span>营销诊断</span><i>→</i><span>人群场景</span><i>→</i><span>内容生成</span><i>→</i><span>事实 / 合规</span></div>
-          <span className="footer-note">AI × 白酒场景化营销</span>
+          <div className="footer-brand"><span className="brand-mark small">见</span><div><strong>酿见 AI</strong><small>把散乱资料变成可用的营销资产。</small></div></div>
+          <div className="footer-flow"><span>读资料</span><i>→</i><span>建事实</span><i>→</i><span>找场景</span><i>→</i><span>做内容</span><i>→</i><span>事实 / 合规</span></div>
+          <span className="footer-note">中小酒企的 AI 营销大脑</span>
         </div>
       </footer>
     </div>
