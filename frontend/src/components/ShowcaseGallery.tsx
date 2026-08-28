@@ -7,19 +7,19 @@ interface ShowcaseGalleryProps {
   loading: boolean
 }
 
-// 区块② 案例展示馆：明确标注「以下为演示案例」（骑缝章徽标）
 export default function ShowcaseGallery({ profiles, onUseProfile, loading }: ShowcaseGalleryProps) {
   if (profiles.length === 0) return null
 
   return (
-    <section className="section" id="cases">
+    <section className="section cases-section" id="cases">
       <div className="wrap">
-        <div className="case-head">
+        <div className="section-heading">
           <div>
-            <h2>一厂一档 · 案例展示馆</h2>
-            <p className="sub">每家酒厂一份「一厂一档」卷宗，Agent 按档案说话。</p>
+            <span className="section-kicker">QUICK START</span>
+            <h2>不想填表？先拿演示档案跑一次</h2>
+            <p>两家虚构酒厂、两种产品逻辑。点击后直接看看酿见如何从产品信息走到营销判断。</p>
           </div>
-          <span className="stamp-badge">以下为演示案例</span>
+          <span className="demo-note">演示数据 · 非真实酒厂</span>
         </div>
         <div className="case-grid">
           {profiles.map((p, i) => (

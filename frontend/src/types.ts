@@ -1,6 +1,44 @@
-// 酒阵 Agent · 前端类型定义（与 backend/app/models.py 镜像）
+// 酿见 AI · 前端类型定义
 
-/** 一厂一档 · 完整品牌档案（/api/profiles 全量返回） */
+export interface FactEvidence {
+  label: string
+  value: string
+  source: string
+  source_excerpt?: string
+  confidence?: 'confirmed' | 'inferred' | 'needs_review' | string
+}
+
+export interface SourceMaterial {
+  name: string
+  media_type: string
+  text: string
+  source_kind: string
+}
+
+export interface MaterialAnalysis {
+  source_names: string[]
+  extracted_facts: FactEvidence[]
+  missing_fields: string[]
+  notes: string[]
+  mode: string
+}
+
+export interface MaterialProfileDraft {
+  name: string
+  location: string
+  product_name: string
+  price_range: string
+  selling_points: string[]
+  fact_evidence: FactEvidence[]
+  extra_material: string
+}
+
+export interface MaterialExtractResponse {
+  materials: SourceMaterial[]
+  analysis: MaterialAnalysis
+  draft: MaterialProfileDraft
+}
+
 export interface ProfileFull {
   profile_id: string
   distillery_name: string
@@ -15,10 +53,10 @@ export interface ProfileFull {
   tone_taboos: string[]
   topic_preferences: string[]
   scene_materials: string[]
+  fact_evidence: FactEvidence[]
   extra_material?: string | null
 }
 
-/** 酒厂信息（工作台表单，兼容快速演示：无需建档直接生成） */
 export interface DistilleryInfo {
   name: string
   location: string
@@ -27,12 +65,54 @@ export interface DistilleryInfo {
   target_audience: string
   selling_points: string[]
   consume_scene?: string
+  marketing_goal?: string
+  existing_channels?: string[]
   brand_tone: string
   tone_taboos?: string[]
+  fact_evidence?: FactEvidence[]
   extra_material?: string
+  source_materials?: SourceMaterial[]
 }
 
-/** 单条生成内容 */
+export interface AudienceSegment {
+  name: string
+  need: string
+  trigger: string
+  recommended_scene: string
+  priority: string
+}
+
+export interface SceneOpportunity {
+  scene: string
+  why_fit: string
+  content_angle: string
+  conversion_action: string
+}
+
+export interface MarketingDiagnosis {
+  core_problem: string
+  strategy: string
+  audience_segments: AudienceSegment[]
+  scene_opportunities: SceneOpportunity[]
+  channel_plan: string[]
+  next_action: string
+  reasoning_mode: string
+  reasoning_basis: string[]
+}
+
+export interface ComplianceIssue {
+  level: string
+  rule: string
+  excerpt: string
+  suggestion: string
+}
+
+export interface ComplianceReport {
+  passed: boolean
+  issues: ComplianceIssue[]
+  fact_gaps: string[]
+}
+
 export interface GeneratedContent {
   channel: 'wechat' | 'moments' | 'video'
   title: string | null
@@ -40,14 +120,15 @@ export interface GeneratedContent {
   hashtags: string[]
 }
 
-/** 三件套 + 流水线轨迹 */
 export interface GenerateResponse {
   distillery: string
+  diagnosis: MarketingDiagnosis
   contents: GeneratedContent[]
+  compliance: ComplianceReport
+  material_analysis?: MaterialAnalysis | null
   pipeline_trace: string[]
 }
 
-/** 评论区互动 */
 export interface CommentReply {
   comment: string
   reply: string

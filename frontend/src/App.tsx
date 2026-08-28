@@ -7,16 +7,20 @@ import Workbench from './components/Workbench'
 import CommentsDemo from './components/CommentsDemo'
 
 const DEFAULT_FORM: DistilleryInfo = {
-  name: '茅台镇老烧坊',
-  location: '贵州遵义·茅台镇',
-  product_name: '老烧坊·窖藏10',
-  price_range: '388元',
-  target_audience: '30-45岁男性、商务送礼与自饮兼顾',
-  selling_points: ['大曲坤沙', '老酒勾调', '赤水河谷产区'],
+  name: '',
+  location: '',
+  product_name: '',
+  price_range: '',
+  target_audience: '',
+  selling_points: [],
   consume_scene: '',
-  brand_tone: '朴实、产区自豪感、有匠心但不装',
+  marketing_goal: '消费者动销',
+  existing_channels: ['朋友圈', '短视频', '公众号'],
+  brand_tone: '朴实、可信、有生活感',
   tone_taboos: [],
+  fact_evidence: [],
   extra_material: '',
+  source_materials: [],
 }
 
 export default function App() {
@@ -43,16 +47,16 @@ export default function App() {
   }
 
   const scrollToResult = () =>
-    workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.setTimeout(() => workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
 
   const handleGenerate = async () => {
     setLoading(true)
     setError(null)
+    scrollToResult()
     try {
       const res = await generate(form)
       setResult(res)
       await pullComments(form)
-      scrollToResult()
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误')
     } finally {
@@ -60,10 +64,10 @@ export default function App() {
     }
   }
 
-  // 案例馆「用此档案生成」：生成 → 档案回填表单（装配可视化）→ 滚到结果
   const handleUseProfile = async (p: ProfileFull) => {
     setLoading(true)
     setError(null)
+    scrollToResult()
     try {
       const res = await generateByProfile(p.profile_id)
       const filled: DistilleryInfo = {
@@ -74,14 +78,17 @@ export default function App() {
         target_audience: p.target_audience,
         selling_points: [...p.selling_points],
         consume_scene: p.lifestyle_scene,
+        marketing_goal: '消费者动销',
+        existing_channels: ['朋友圈', '短视频', '公众号'],
         brand_tone: p.brand_tone,
         tone_taboos: [...p.tone_taboos],
+        fact_evidence: [...p.fact_evidence],
         extra_material: p.scene_materials.join('；'),
+        source_materials: [],
       }
       setForm(filled)
       setResult(res)
       await pullComments(filled)
-      scrollToResult()
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误')
     } finally {
@@ -89,17 +96,26 @@ export default function App() {
     }
   }
 
+  const handleQuickDemo = () => {
+    const demo = profiles.find((p) => p.profile_id === 'qingxi') ?? profiles[0]
+    if (demo) handleUseProfile(demo)
+  }
+
   return (
     <div className="page">
-      <BrandHero />
+      <BrandHero onQuickDemo={handleQuickDemo} quickDemoDisabled={loading || profiles.length === 0} />
       <main>
         <ShowcaseGallery profiles={profiles} onUseProfile={handleUseProfile} loading={loading} />
 
-        <section className="section" id="workbench">
+        <section className="section workbench-section" id="workbench">
           <div className="wrap">
-            <div className="workbench-head">
-              <h2>内容工作台</h2>
-              <p className="sub">填四张卡，交给 Agent；语气跟着档案走，红线自动避开。</p>
+            <div className="section-heading workbench-heading">
+              <div>
+                <span className="section-kicker">MARKETING WORKSPACE</span>
+                <h2>别先填营销表，把酒厂现有资料交进来</h2>
+                <p>酿见先从 PDF、产品资料和已有文字里提取事实，再让你确认少量关键字段，最后才做人群、场景和内容判断。</p>
+              </div>
+              <div className="workspace-legend"><span><i className="required-dot" /> AI 先读资料</span><span><i className="optional-dot" /> 人只补缺口</span></div>
             </div>
             <Workbench
               ref={workbenchRef}
@@ -116,12 +132,10 @@ export default function App() {
         <CommentsDemo comments={comments} loading={loading} />
       </main>
       <footer className="footer">
-        <div className="wrap">
-          <span className="brand">酒阵 Agent</span>
-          <span className="dot">·</span>
-          <span>贵客松 2026 赛道二（AI×白酒）</span>
-          <span className="dot">·</span>
-          <span>48h 演示版：模板+规则引擎驱动，离线可跑，LLM 接入开关已预留</span>
+        <div className="wrap footer-inner">
+          <div className="footer-brand"><span className="brand-mark small">见</span><div><strong>酿见 AI</strong><small>把散乱资料变成可用的营销资产。</small></div></div>
+          <div className="footer-flow"><span>读资料</span><i>→</i><span>建事实</span><i>→</i><span>找场景</span><i>→</i><span>做内容</span><i>→</i><span>事实 / 合规</span></div>
+          <span className="footer-note">中小酒企的 AI 营销大脑</span>
         </div>
       </footer>
     </div>

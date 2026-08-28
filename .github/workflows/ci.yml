@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feature/marketing-agent-v2]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Compile and import backend
+        run: |
+          python -m compileall -q backend/app
+          PYTHONPATH=backend python -c "from app.main import app; print(app.title)"
+
+      - name: Check material to marketing chain
+        run: |
+          PYTHONPATH=backend python - <<'PY'
+          from app.material_intelligence import analyze_materials, merge_material_draft
+          from app.marketing import diagnose_marketing
+          from app.models import DistilleryInfo, SourceMaterial
+
+          materials = [SourceMaterial(
+              name='产品手册-demo.txt',
+              text='酒厂：青溪酒厂\n产品名称：青溪·小坛\n建议零售价：168元\n产区：贵州遵义·习水县\n瓶身标注酒精度：53%vol\n产品资料：小坛储存，小规格包装。',
+              source_kind='demo',
+          )]
+          analysis, draft = analyze_materials(materials)
+          assert draft.product_name == '青溪·小坛'
+          assert draft.price_range == '168元'
+          assert any(f.value == '53%vol' and f.source == '产品手册-demo.txt' for f in analysis.extracted_facts)
+          info = DistilleryInfo(source_materials=materials, marketing_goal='消费者动销')
+          info = merge_material_draft(info, analysis, draft)
+          diagnosis = diagnose_marketing(info)
+          assert diagnosis.scene_opportunities
+          assert diagnosis.reasoning_basis
+          print('material -> evidence -> marketing chain ok')
+          PY
+
+      - name: Check consumer content separation
+        run: |
+          PYTHONPATH=backend python - <<'PY'
+          from app.profiles import get_profile, profile_to_info
+          from app.pipeline import run_pipeline
+
+          profile = get_profile('qingxi')
+          assert profile is not None
+          contents, _ = run_pipeline(profile_to_info(profile))
+          banned = ('品牌心智', '营销机会', '目标消费者', '策略建议', '先回答一个问题')
+          for item in contents:
+              for word in banned:
+                  assert word not in item.body, f'{item.channel} contains strategy jargon: {word}'
+          print('consumer content separation ok')
+          PY
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Build public demo image
+        run: docker build -t niangjian-ai:ci .
