@@ -6,6 +6,22 @@
 
 品牌 Slogan：**先看见消费者和生活场景，再决定这瓶酒怎么卖。**
 
+## 评委快速体验
+
+**推荐：直接打开公开 Demo，点击首页「30 秒看完整演示」。**
+
+演示会完整展示：
+
+```text
+读取企业资料 → 提取有来源的事实 → 判断消费者与场景 → 生成内容 → 发布前事实/风险检查
+```
+
+无需注册、无需填写表单。演示结束后，再依次查看「策略诊断 / 内容资产 / 发布检查」。
+
+公开体验地址：`待部署后填写`
+
+详细说明：[`docs/评委快速体验.md`](docs/评委快速体验.md)
+
 ## 它不是什么
 
 酿见不是“输入几个关键词，生成三篇白酒文案”的工具。
@@ -179,23 +195,7 @@ LLM_MODEL=your-model
 
 完整产品路线见 [`docs/产品路线图.md`](docs/产品路线图.md)。
 
-## 8. 当前 Demo 怎么体验
-
-**最快：点击首页「30 秒看完整演示」。**
-
-系统会装配两份明确标记为 Demo 的原始资料，跑完整链路：
-
-```text
-读资料 → 建事实 → 人群/场景 → 内容资产 → 发布检查 → 评论承接
-```
-
-也可以在工作台直接上传自己的 PDF / 文本资料。
-
-公开地址部署完成后填入：`https://__________`
-
-评委快速体验说明：[`docs/评委快速体验.md`](docs/评委快速体验.md)
-
-## 9. 技术栈
+## 8. 技术栈
 
 ### Backend
 
@@ -226,14 +226,14 @@ CI 会检查：
 - 前端 TypeScript 构建；
 - 公开 Demo Docker 镜像构建。
 
-## 10. 本地运行
+## 9. 本地运行
 
 ### Mac / Linux
 
 ```bash
 git clone https://github.com/jryyu91-cmd/jiuzhen-agent.git
 cd jiuzhen-agent
-git checkout feature/marketing-agent-v2
+git checkout main
 zsh setup.sh
 ```
 
@@ -244,11 +244,11 @@ zsh setup.sh
 ```bash
 git clone https://github.com/jryyu91-cmd/jiuzhen-agent.git
 cd jiuzhen-agent
-git checkout feature/marketing-agent-v2
+git checkout main
 docker compose up --build
 ```
 
-## 11. 当前版本边界
+## 10. 当前版本边界
 
 当前是 48 小时原型 / Demo，不把暂未实现的能力包装成已经完成：
 
@@ -258,7 +258,7 @@ docker compose up --build
 - 内容生成目前以稳定规则模板为主，LLM 主要用于可选的资料理解与营销推理；
 - 评论承接尚未接企业真实库存、门店、电商和 CRM，因此不会替企业编购买渠道或售后承诺。
 
-## 12. 下一阶段验证
+## 11. 下一阶段验证
 
 不优先继续增加更多内容渠道，而是找真实中小酒企跑一个最小 PoC：
 
