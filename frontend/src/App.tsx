@@ -30,6 +30,7 @@ export default function App() {
   const [comments, setComments] = useState<CommentResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [demoMode, setDemoMode] = useState(false)
   const workbenchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function App() {
     window.setTimeout(() => workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
 
   const handleGenerate = async () => {
+    setDemoMode(false)
     setLoading(true)
     setError(null)
     scrollToResult()
@@ -65,6 +67,7 @@ export default function App() {
   }
 
   const handleUseProfile = async (p: ProfileFull) => {
+    setDemoMode(true)
     setLoading(true)
     setError(null)
     scrollToResult()
@@ -101,6 +104,15 @@ export default function App() {
     if (demo) handleUseProfile(demo)
   }
 
+  const handleStartOwn = () => {
+    setDemoMode(false)
+    setForm(DEFAULT_FORM)
+    setResult(null)
+    setComments(null)
+    setError(null)
+    window.setTimeout(() => workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
+
   return (
     <div className="page">
       <BrandHero onQuickDemo={handleQuickDemo} quickDemoDisabled={loading || profiles.length === 0} />
@@ -112,10 +124,10 @@ export default function App() {
             <div className="section-heading workbench-heading">
               <div>
                 <span className="section-kicker">MARKETING WORKSPACE</span>
-                <h2>别先填营销表，把酒厂现有资料交进来</h2>
-                <p>酿见先从 PDF、产品资料和已有文字里提取事实，再让你确认少量关键字段，最后才做人群、场景和内容判断。</p>
+                <h2>把手头资料放进来，剩下的让酿见先做</h2>
+                <p>上传产品手册、PDF，或者直接粘一段文字。酿见先识别产品、卖点和事实来源，识别不出的地方才让你补。</p>
               </div>
-              <div className="workspace-legend"><span><i className="required-dot" /> AI 先读资料</span><span><i className="optional-dot" /> 人只补缺口</span></div>
+              <div className="workspace-legend"><span><i className="required-dot" /> 先上传 / 粘贴</span><span><i className="optional-dot" /> AI 先读，人来确认</span></div>
             </div>
             <Workbench
               ref={workbenchRef}
@@ -125,6 +137,8 @@ export default function App() {
               onGenerate={handleGenerate}
               loading={loading}
               error={error}
+              demoMode={demoMode}
+              onStartOwn={handleStartOwn}
             />
           </div>
         </section>
