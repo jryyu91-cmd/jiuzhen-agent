@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { GenerateResponse } from '../types'
 
 interface ResultPanelProps {
@@ -16,9 +16,13 @@ type ResultMode = 'materials' | 'strategy' | 'content' | 'check'
 
 export default function ResultPanel({ result, loading = false }: ResultPanelProps) {
   const [activeTab, setActiveTab] = useState<string>('wechat')
-  const [mode, setMode] = useState<ResultMode>('materials')
+  const [mode, setMode] = useState<ResultMode>('strategy')
   const [copied, setCopied] = useState(false)
   const active = result?.contents.find((c) => c.channel === activeTab) ?? result?.contents[0]
+
+  useEffect(() => {
+    if (result) setMode('strategy')
+  }, [result])
 
   const copyActive = async () => {
     if (!active) return
@@ -45,7 +49,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
 
   if (loading) {
     return (
-      <div className="card result-card running-state">
+      <div className="card result-card running-state" id="result-panel">
         <div className="agent-orbit"><span>见</span><i /><b /></div>
         <span className="mini-label">AGENT IS WORKING</span>
         <h3>酿见正在先读资料，再做营销判断</h3>
@@ -62,16 +66,16 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
 
   if (!result) {
     return (
-      <div className="card result-card empty-result">
+      <div className="card result-card empty-result" id="result-panel">
         <div className="empty-visual">
           <span className="empty-core">见</span>
           <i className="ring ring-one" /><i className="ring ring-two" />
         </div>
         <span className="mini-label">YOUR MARKETING MEMORY STARTS HERE</span>
-        <h3>不用先想“怎么填营销表”</h3>
-        <p>把产品资料交进来。酿见先把可确认事实整理出来，再决定人群、场景和内容。</p>
+        <h3>把手头资料给酿见就能开始</h3>
+        <p>它会先把产品和有依据的卖点找出来，再判断这瓶酒更适合谁、什么场景、内容怎么发。</p>
         <div className="empty-steps">
-          <span><b>1</b> 读资料</span><i>→</i><span><b>2</b> 建事实</span><i>→</i><span><b>3</b> 找场景</span><i>→</i><span><b>4</b> 做营销</span>
+          <span><b>1</b> 读资料</span><i>→</i><span><b>2</b> 找依据</span><i>→</i><span><b>3</b> 找人和场景</span><i>→</i><span><b>4</b> 做内容</span>
         </div>
       </div>
     )
@@ -80,7 +84,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
   const material = result.material_analysis
 
   return (
-    <div className="card result-card">
+    <div className="card result-card" id="result-panel">
       <div className="result-toolbar">
         <div>
           <span className="result-status"><i /> 分析完成</span>
@@ -94,6 +98,10 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
         </nav>
       </div>
 
+      <div style={{ margin: '16px 18px 0', padding: '11px 13px', borderRadius: 12, background: '#f8f5f3', border: '1px solid #eee3df', fontSize: 11.5, lineHeight: 1.65, color: '#626870' }}>
+        <strong style={{ color: '#762e3f' }}>从这里开始：</strong> 先看「策略诊断」理解为什么这样卖，再看「内容资产」怎么落地，最后看「发布检查」。需要核对原始依据时，再打开「资料事实」。
+      </div>
+
       <div className="result-body">
         {mode === 'materials' && (
           <div className="strategy-view">
@@ -101,12 +109,12 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
               <>
                 <section className="diagnosis-hero">
                   <span className="section-kicker">SOURCE → FACT</span>
-                  <h3>先把散乱资料变成可确认、可追溯的品牌事实</h3>
-                  <p>本次读取 {material.source_names.length} 份资料，识别 {material.extracted_facts.length} 条有来源的事实。营销推断不会被混进这里。</p>
+                  <h3>这些是酿见从资料里真正读到的事实</h3>
+                  <p>本次读取 {material.source_names.length} 份资料，识别 {material.extracted_facts.length} 条有来源的事实。这里不放“适合谁、适合什么场景”这类营销判断。</p>
                 </section>
 
                 <section className="result-section">
-                  <div className="section-title-row"><div><span className="section-kicker">SOURCES</span><h4>本次读取的资料</h4></div><small>企业已有资料就是入口</small></div>
+                  <div className="section-title-row"><div><span className="section-kicker">SOURCES</span><h4>本次读取的资料</h4></div><small>点这里是为了核对依据</small></div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {material.source_names.map((name) => (
                       <span key={name} style={{ padding: '8px 11px', border: '1px solid #e5e7e5', background: '#fff', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>{name}</span>
@@ -133,16 +141,16 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
 
                 {material.missing_fields.length > 0 && (
                   <section className="next-action-card">
-                    <div><span className="section-kicker">NEEDS CONFIRMATION</span><h4>只让人补这些缺口</h4></div>
+                    <div><span className="section-kicker">NEEDS CONFIRMATION</span><h4>只需要再确认这些信息</h4></div>
                     <p>{material.missing_fields.join('、')}</p>
                   </section>
                 )}
               </>
             ) : (
               <section className="diagnosis-hero">
-                <span className="section-kicker">MANUAL CONFIRMATION</span>
-                <h3>本次从人工确认信息开始</h3>
-                <p>没有上传原始资料，所以酿见直接使用你确认过的产品字段。真实长期使用时，建议先建立资料与证据档案，后续任务就不需要重复填写。</p>
+                <span className="section-kicker">NO SOURCE FILES IN THIS RUN</span>
+                <h3>这次任务没有读取原始文件</h3>
+                <p>当前结果使用的是已经确认好的产品信息，所以这里没有文件来源可以展开。你可以直接看「策略诊断 → 内容资产 → 发布检查」；以后用自己的资料上传时，这里才会显示“事实来自哪份文件、哪段原文”。</p>
               </section>
             )}
           </div>
@@ -158,7 +166,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
 
             <section className="result-section">
               <div className="section-title-row">
-                <div><span className="section-kicker">WHY THIS JUDGEMENT</span><h4>这次判断是怎么来的</h4></div>
+                <div><span className="section-kicker">WHY THIS JUDGEMENT</span><h4>为什么酿见会这样判断</h4></div>
                 <small>{result.diagnosis.reasoning_mode === 'llm' ? 'AI 受证据约束推理' : '可解释规则兜底'}</small>
               </div>
               <div style={{ display: 'grid', gap: 8 }}>
@@ -168,11 +176,11 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
                   </div>
                 ))}
               </div>
-              <p style={{ margin: '10px 0 0', fontSize: 10.5, color: '#8a9098' }}>这里展示的是判断依据，不代表场景建议已经被市场验证；真实经营反馈会决定下一轮是否继续。</p>
+              <p style={{ margin: '10px 0 0', fontSize: 10.5, color: '#8a9098' }}>这里是本轮营销判断的依据，不代表这个场景已经被市场验证。真实经营数据会决定下一轮是否继续。</p>
             </section>
 
             <section className="result-section">
-              <div className="section-title-row"><div><span className="section-kicker">AUDIENCE</span><h4>优先消费者</h4></div><small>先找最值得测试的人</small></div>
+              <div className="section-title-row"><div><span className="section-kicker">AUDIENCE</span><h4>这瓶酒先卖给谁</h4></div><small>先找最值得测试的人</small></div>
               <div className="audience-grid">
                 {result.diagnosis.audience_segments.map((a, idx) => (
                   <article className="insight-card" key={`${a.name}-${a.recommended_scene}`}>
@@ -186,21 +194,21 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
             </section>
 
             <section className="result-section">
-              <div className="section-title-row"><div><span className="section-kicker">SCENES</span><h4>场景机会</h4></div><small>从具体生活时刻，而不是抽象“酒桌”开始</small></div>
+              <div className="section-title-row"><div><span className="section-kicker">SCENES</span><h4>先试哪些消费场景</h4></div><small>把抽象“酒桌”拆成具体生活时刻</small></div>
               <div className="scene-list">
                 {result.diagnosis.scene_opportunities.map((s, idx) => (
                   <article className="scene-card" key={s.scene}>
                     <span className="scene-index">{String(idx + 1).padStart(2, '0')}</span>
                     <div className="scene-main"><h5>{s.scene}</h5><p>{s.why_fit}</p></div>
-                    <div className="scene-side"><small>内容角度</small><p>{s.content_angle}</p></div>
-                    <div className="scene-side"><small>转化动作</small><p>{s.conversion_action}</p></div>
+                    <div className="scene-side"><small>内容怎么切</small><p>{s.content_angle}</p></div>
+                    <div className="scene-side"><small>怎么承接</small><p>{s.conversion_action}</p></div>
                   </article>
                 ))}
               </div>
             </section>
 
             <section className="next-action-card">
-              <div><span className="section-kicker">NEXT ACTION</span><h4>下一步先做这一件事</h4></div>
+              <div><span className="section-kicker">NEXT ACTION</span><h4>下一步先做什么</h4></div>
               <p>{result.diagnosis.next_action}</p>
             </section>
 
@@ -220,7 +228,7 @@ export default function ResultPanel({ result, loading = false }: ResultPanelProp
               </nav>
               <button className="copy-btn" onClick={copyActive}>{copied ? '已复制 ✓' : '复制内容'}</button>
             </div>
-            <p style={{ margin: '0 0 18px', fontSize: 12, color: '#7a8087' }}>消费者内容草稿 · 策略判断留在“策略诊断”，事实依据来自“资料事实”。</p>
+            <p style={{ margin: '0 0 18px', fontSize: 12, color: '#7a8087' }}>这里是给消费者看的内容草稿。后台的营销判断不会硬塞进成品；需要核对卖点来源时，可以回到「资料事实」。</p>
             {active && (
               <article className="article">
                 <div className="article-meta"><span>已按诊断结果生成</span><span>·</span><span>{CHANNEL_LABEL[active.channel]}</span></div>
