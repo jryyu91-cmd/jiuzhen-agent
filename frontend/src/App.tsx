@@ -31,6 +31,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [demoMode, setDemoMode] = useState(false)
+  const [demoRunning, setDemoRunning] = useState(false)
   const workbenchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export default function App() {
 
   const handleGenerate = async () => {
     setDemoMode(false)
+    setDemoRunning(false)
     setLoading(true)
     setError(null)
     scrollToResult()
@@ -66,46 +68,61 @@ export default function App() {
     }
   }
 
-  const handleUseProfile = async (p: ProfileFull) => {
+  const handleUseProfile = async (p: ProfileFull, walkthrough = false) => {
     setDemoMode(true)
+    setDemoRunning(walkthrough)
     setLoading(true)
     setError(null)
+    setResult(null)
+    setComments(null)
     scrollToResult()
+
+    const filled: DistilleryInfo = {
+      name: p.distillery_name,
+      location: p.location,
+      product_name: p.product_name,
+      price_range: p.price_range,
+      target_audience: p.target_audience,
+      selling_points: [...p.selling_points],
+      consume_scene: p.lifestyle_scene,
+      marketing_goal: '消费者动销',
+      existing_channels: ['朋友圈', '短视频', '公众号'],
+      brand_tone: p.brand_tone,
+      tone_taboos: [...p.tone_taboos],
+      fact_evidence: [...p.fact_evidence],
+      extra_material: p.scene_materials.join('；'),
+      source_materials: [],
+    }
+    setForm(filled)
+
     try {
       const res = await generateByProfile(p.profile_id)
-      const filled: DistilleryInfo = {
-        name: p.distillery_name,
-        location: p.location,
-        product_name: p.product_name,
-        price_range: p.price_range,
-        target_audience: p.target_audience,
-        selling_points: [...p.selling_points],
-        consume_scene: p.lifestyle_scene,
-        marketing_goal: '消费者动销',
-        existing_channels: ['朋友圈', '短视频', '公众号'],
-        brand_tone: p.brand_tone,
-        tone_taboos: [...p.tone_taboos],
-        fact_evidence: [...p.fact_evidence],
-        extra_material: p.scene_materials.join('；'),
-        source_materials: [],
-      }
-      setForm(filled)
       setResult(res)
-      await pullComments(filled)
+      setLoading(false)
+      void pullComments(filled).catch(() => setComments(null))
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误')
-    } finally {
       setLoading(false)
     }
   }
 
   const handleQuickDemo = () => {
     const demo = profiles.find((p) => p.profile_id === 'qingxi') ?? profiles[0]
-    if (demo) handleUseProfile(demo)
+    if (demo) void handleUseProfile(demo, true)
+  }
+
+  const handleDemoFinish = () => {
+    setDemoRunning(false)
+    window.setTimeout(() => workbenchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
+
+  const handleDemoSkip = () => {
+    if (!loading && result) handleDemoFinish()
   }
 
   const handleStartOwn = () => {
     setDemoMode(false)
+    setDemoRunning(false)
     setForm(DEFAULT_FORM)
     setResult(null)
     setComments(null)
@@ -124,10 +141,12 @@ export default function App() {
             <div className="section-heading workbench-heading">
               <div>
                 <span className="section-kicker">MARKETING WORKSPACE</span>
-                <h2>把手头资料放进来，剩下的让酿见先做</h2>
-                <p>上传产品手册、PDF，或者直接粘一段文字。酿见先识别产品、卖点和事实来源，识别不出的地方才让你补。</p>
+                <h2>{demoRunning ? '看酿见怎么把一份资料变成一次营销任务' : '把手头资料放进来，剩下的让酿见先做'}</h2>
+                <p>{demoRunning ? '这是完整演示过程，不需要填写任何内容。演示结束后会自动进入策略诊断结果。' : '上传产品手册、PDF，或者直接粘一段文字。酿见先识别产品、卖点和事实来源，识别不出的地方才让你补。'}</p>
               </div>
-              <div className="workspace-legend"><span><i className="required-dot" /> 先上传 / 粘贴</span><span><i className="optional-dot" /> AI 先读，人来确认</span></div>
+              <div className="workspace-legend">
+                {demoRunning ? <><span><i className="required-dot" /> 自动演示中</span><span><i className="optional-dot" /> 可跳过看结果</span></> : <><span><i className="required-dot" /> 先上传 / 粘贴</span><span><i className="optional-dot" /> AI 先读，人来确认</span></>}
+              </div>
             </div>
             <Workbench
               ref={workbenchRef}
@@ -138,6 +157,10 @@ export default function App() {
               loading={loading}
               error={error}
               demoMode={demoMode}
+              demoRunning={demoRunning}
+              onDemoFinish={handleDemoFinish}
+              onDemoSkip={handleDemoSkip}
+              onDemoRetry={handleQuickDemo}
               onStartOwn={handleStartOwn}
             />
           </div>
