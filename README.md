@@ -231,8 +231,8 @@ CI 会检查：
 ### Mac / Linux
 
 ```bash
-git clone https://github.com/jryyu91-cmd/jiuzhen-agent.git
-cd jiuzhen-agent
+git clone https://github.com/jryyu91-cmd/niangjian-ai.git
+cd niangjian-ai
 git checkout main
 zsh setup.sh
 ```
@@ -242,8 +242,8 @@ zsh setup.sh
 ### Docker
 
 ```bash
-git clone https://github.com/jryyu91-cmd/jiuzhen-agent.git
-cd jiuzhen-agent
+git clone https://github.com/jryyu91-cmd/niangjian-ai.git
+cd niangjian-ai
 git checkout main
 docker compose up --build
 ```
